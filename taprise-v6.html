@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TapRise</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06070a;--s1:#0b0d13;--s2:#0f1219;--card:#13161f;--border:#1c2133;
+  --gold:#e8b84b;--gold2:#f5d070;
+  --ruby:#e84b6b;--emerald:#4be8a0;--sapphire:#4b9de8;--amethyst:#a04be8;--amber:#f5a623;
+  --text:#d8dce8;--muted:#3d4560;--lock:#22273a;
+  --font-h:'Cinzel',serif;--font-b:'Crimson Pro',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:15px;max-width:440px;margin:0 auto;min-height:100vh;overflow-x:hidden;user-select:none}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(232,184,75,.06),transparent 65%),
+             radial-gradient(ellipse 40% 30% at 15% 100%,rgba(160,75,232,.04),transparent 55%)}
+.app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;padding-bottom:395px}
+/* Space for click-zone when dock is collapsed — JS toggles this class on body */
+body.dock-collapsed .app{padding-bottom:50px}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 7px;border-bottom:1px solid var(--border);background:rgba(11,13,19,.93);backdrop-filter:blur(8px);position:sticky;top:0;z-index:50}
+.logo{font-family:var(--font-h);font-size:1.15rem;letter-spacing:.12em;color:var(--gold);text-shadow:0 0 14px rgba(232,184,75,.35);cursor:pointer}
+.hdr-right{display:flex;align-items:center;gap:7px}
+.hdr-pill{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:3px 9px}
+.hdr-pill .ico{font-size:12px}
+.hdr-pill .val{font-family:var(--font-h);font-size:.8rem;color:var(--gold)}
+.hdr-pill.gem .val{color:var(--emerald)}
+.ad-badge{font-size:8px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;border:1px solid var(--border);border-radius:10px;padding:2px 6px}
+.ad-free-badge{color:var(--emerald);border-color:rgba(75,232,160,.3);background:rgba(75,232,160,.06)}
+
+/* ── RESOURCE BAR ── */
+.res-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.res{background:var(--s1);padding:6px 8px;text-align:center}
+.res .v{font-family:var(--font-h);font-size:.9rem;color:var(--gold);line-height:1}
+.res .l{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+/* ── CLICK ZONE ── */
+.click-zone{display:flex;flex-direction:column;align-items:center;padding:12px 16px 8px;background:var(--s1);transition:padding .35s}
+.click-zone.expanded #clk{width:200px;height:200px;font-size:4.4rem;transition:all .35s}
+#clk{transition:all .35s}
+.lv-row{display:flex;justify-content:space-between;width:100%;margin-bottom:4px}
+.lv-name{font-family:var(--font-h);font-size:.7rem;color:var(--gold);letter-spacing:.07em}
+.lv-xp{font-size:11px;color:var(--muted)}
+.prog-track{width:100%;height:4px;background:var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#c8860a,var(--gold2));border-radius:10px;transition:width .3s;box-shadow:0 0 5px var(--gold)}
+.btn-wrap{position:relative;margin-bottom:6px}
+.orbit{position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(232,184,75,.07);animation:spin 12s linear infinite;pointer-events:none}
+.orbit::after{content:'✦';position:absolute;top:-5px;left:50%;transform:translateX(-50%);font-size:8px;color:rgba(232,184,75,.28)}
+.orbit2{animation:spin 20s linear infinite reverse;inset:-20px}
+.orbit2::after{content:'◆';top:auto;bottom:-5px;font-size:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#clk{width:154px;height:154px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 33% 30%,#2a1e06,#1a1204 50%,#080605);
+  border:2px solid rgba(232,184,75,.5);
+  box-shadow:0 0 0 3px rgba(232,184,75,.03),0 0 24px rgba(232,184,75,.1),inset 0 -8px 16px rgba(0,0,0,.7),inset 0 3px 9px rgba(232,184,75,.05);
+  display:flex;align-items:center;justify-content:center;font-size:3.4rem;
+  transition:transform .08s,box-shadow .08s;position:relative;z-index:10;touch-action:manipulation}
+#clk.pressed{transform:scale(.9);box-shadow:0 0 0 3px rgba(232,184,75,.07),0 0 40px rgba(232,184,75,.22),inset 0 -4px 9px rgba(0,0,0,.7),inset 0 5px 16px rgba(232,184,75,.1)}
+.cps-lbl{font-size:11px;color:var(--muted);letter-spacing:.04em}
+.floater{position:fixed;font-family:var(--font-h);font-size:.95rem;pointer-events:none;animation:fly .9s ease forwards;z-index:999;text-shadow:0 0 6px currentColor}
+@keyframes fly{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(.48)}}
+
+/* ── TABS ── */
+.tabs{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--s1);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:0;padding:9px 3px 8px;text-align:center;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:var(--font-h);white-space:nowrap;position:relative}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold);background:linear-gradient(180deg,rgba(232,184,75,.06),transparent)}
+.tab.on::before{content:'';position:absolute;bottom:-1px;left:25%;right:25%;height:2px;background:var(--gold);box-shadow:0 0 6px var(--gold);border-radius:2px}
+.tab.locked-tab{color:var(--muted);opacity:.38;cursor:default}
+.tab .ti{font-size:14px;display:block;margin-bottom:2px}
+
+/* ── PANELS ── */
+.panel{flex:1;padding:11px;display:none;overflow-y:auto;max-height:calc(100vh - 288px);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.panel.on{display:block}
+/* Collapsed bottom pane */
+/* ── BOTTOM DOCK — fixed footer, slides off-screen when collapsed ── */
+.bottom-dock{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:440px;z-index:40;
+  display:flex;flex-direction:column;
+  transition:transform .4s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 -4px 24px rgba(0,0,0,.5);
+}
+.bottom-dock.collapsed{transform:translateX(-50%) translateY(calc(100% - 34px))}
+.bottom-pane{background:var(--bg);overflow:hidden}
+.collapse-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;padding:7px 0 6px;height:34px;
+  background:var(--s1);border:none;
+  border-top:1px solid rgba(232,184,75,.22);
+  cursor:pointer;font-family:var(--font-h);font-size:.6rem;
+  letter-spacing:.08em;color:var(--muted);transition:color .2s;
+  flex-shrink:0;
+}
+.collapse-btn:hover{color:var(--gold)}
+.collapse-btn .cb-ico{font-size:11px;transition:transform .4s;display:inline-block}
+.bottom-dock.collapsed .cb-ico{transform:rotate(180deg)}
+/* Panels */
+.panel{padding:11px;display:none;overflow-y:auto;max-height:340px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.panel.on{display:block}
+/* Upgrade nudge bubble */
+.upg-nudge{position:fixed;bottom:44px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(232,184,75,.18),rgba(232,184,75,.09));border:1px solid rgba(232,184,75,.55);border-radius:22px;padding:8px 18px;font-family:var(--font-h);font-size:.67rem;letter-spacing:.06em;color:var(--gold);box-shadow:0 0 20px rgba(232,184,75,.22),0 4px 16px rgba(0,0,0,.4);z-index:45;white-space:nowrap;display:none;cursor:pointer}
+.upg-nudge.show{display:flex;align-items:center;gap:7px;animation:nudgePop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes nudgePop{from{transform:translateX(-50%) scale(.7);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+
+/* ── FRENZY BAR ── */
+.frenzy-wrap{width:100%;margin-top:10px;margin-bottom:2px;padding:0 4px}
+.frenzy-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.frenzy-label{font-family:var(--font-h);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase}
+.frenzy-label.charging{color:var(--amber)}
+.frenzy-label.active{color:var(--gold2);text-shadow:0 0 8px rgba(255,220,50,.6)}
+.frenzy-label.cooldown{color:var(--muted)}
+.frenzy-status{font-size:.65rem;font-family:var(--font-h);letter-spacing:.04em}
+.frenzy-status.active{color:var(--gold2)}
+.frenzy-status.cooldown{color:var(--muted)}
+.frenzy-track{width:100%;height:8px;background:var(--border);border-radius:10px;overflow:hidden;position:relative}
+.frenzy-fill{height:100%;border-radius:10px;transition:width .12s linear;position:relative}
+.frenzy-fill.charging{background:linear-gradient(90deg,#9e5200,var(--amber));box-shadow:0 0 7px rgba(245,166,35,.45)}
+.frenzy-fill.active{background:linear-gradient(90deg,#e8b84b,#fff07a,#e8b84b);background-size:200% 100%;animation:frenzyShimmer .9s linear infinite;box-shadow:0 0 12px rgba(255,220,50,.8)}
+.frenzy-fill.cooldown{background:linear-gradient(90deg,#2a3050,#3d4560)}
+@keyframes frenzyShimmer{0%{background-position:200% 0}100%{background-position:0% 0}}
+.frenzy-hint{font-size:9px;color:var(--muted);text-align:center;margin-top:3px;letter-spacing:.03em;height:12px}
+.frenzy-ad-btn{margin-top:5px;width:100%;padding:5px 8px;border:1px solid rgba(75,157,232,.4);border-radius:8px;background:rgba(75,157,232,.07);font-family:var(--font-h);font-size:.57rem;letter-spacing:.07em;color:var(--sapphire);cursor:pointer;transition:all .2s;text-align:center;display:none}
+.frenzy-ad-btn.visible{display:block}
+.frenzy-ad-btn:hover{background:rgba(75,157,232,.15);border-color:rgba(75,157,232,.6)}
+.sec{font-family:var(--font-h);font-size:.57rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+
+/* ── LOCKED PANEL ── */
+.locked-panel{text-align:center;padding:32px 20px}
+.lock-ico{font-size:3rem;margin-bottom:14px;display:block;opacity:.5}
+.lock-title{font-family:var(--font-h);font-size:1rem;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.lock-desc{font-size:13px;color:var(--muted);line-height:1.6;max-width:240px;margin:0 auto}
+.lock-req{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:rgba(184,127,255,.07);border:1px solid rgba(184,127,255,.2);border-radius:20px;padding:5px 14px;font-family:var(--font-h);font-size:.65rem;letter-spacing:.08em;color:#b87fff}
+
+/* ── FORGE UPGRADES ── */
+.upg-list{display:flex;flex-direction:column;gap:5px}
+.forge-drop-banner{background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.3);border-radius:8px;padding:8px 12px;margin-bottom:9px;font-size:12px;color:var(--gold);text-align:center;font-family:var(--font-h);letter-spacing:.04em}
+.upg{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.upg.can{border-color:rgba(232,184,75,.35)}
+.upg.locked-upg{opacity:.32;cursor:default;filter:grayscale(.6)}
+.upg-ico{font-size:1.45rem;flex-shrink:0}
+.upg-body{flex:1;min-width:0}
+.upg-name{font-family:var(--font-h);font-size:.65rem;letter-spacing:.04em;margin-bottom:2px}
+.upg-desc{font-size:11px;color:var(--muted)}
+.upg-unlock{font-size:10px;color:var(--sapphire);margin-top:2px}
+.upg-cost{text-align:right;flex-shrink:0}
+.upg-cv{font-family:var(--font-h);font-size:.75rem;color:var(--gold)}
+.upg-cl{font-size:9px;color:var(--muted)}
+.upg-lv{position:absolute;top:3px;right:3px;font-size:8px;background:rgba(232,184,75,.1);color:var(--gold);border-radius:3px;padding:1px 4px;font-family:var(--font-h)}
+
+/* ── COMBAT ── */
+.combat-arena{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:8px;position:relative}
+.wave-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-h);font-size:.57rem;letter-spacing:.1em;color:var(--ruby);background:rgba(232,75,107,.09);border:1px solid rgba(232,75,107,.22);border-radius:20px;padding:2px 9px;margin-bottom:9px}
+.fighters{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center;margin-bottom:9px}
+.fighter{text-align:center}
+.fighter-ico{font-size:1.8rem;display:block;margin-bottom:2px}
+.fighter-name{font-family:var(--font-h);font-size:.56rem;letter-spacing:.04em;margin-bottom:3px;display:block}
+.hp-bar{height:5px;background:var(--border);border-radius:10px;overflow:hidden;margin-bottom:2px}
+.hp-fill{height:100%;border-radius:10px;transition:width .4s}
+.hero-hp{background:linear-gradient(90deg,#1a9e50,var(--emerald))}
+.enemy-hp{background:linear-gradient(90deg,#9e1a1a,var(--ruby))}
+.hp-txt{font-size:9px;color:var(--muted)}
+.vs-ico{font-size:.8rem;color:var(--ruby);font-family:var(--font-h);text-align:center}
+.combat-log{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;max-height:70px;overflow-y:auto;font-size:10.5px;color:var(--muted);line-height:1.75;scrollbar-width:thin}
+.lg{color:var(--gold)}.lr{color:var(--ruby)}.le{color:var(--emerald)}.lb{color:var(--sapphire)}.lp{color:var(--amethyst)}.la{color:var(--amber)}
+.hero-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:7px}
+.hstat{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:4px 3px;text-align:center}
+.hstat .sv{font-family:var(--font-h);font-size:.75rem;line-height:1}
+.hstat .sl{font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.drop-chances{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.drop-chip{font-size:9px;border:1px solid;border-radius:4px;padding:2px 6px}
+.hu-list{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.hu{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .15s}
+.hu:hover:not(.cant){border-color:rgba(232,75,107,.28);background:#151020}
+.hu.passive-skill{border-left:2px solid rgba(75,157,232,.4)}
+.hu.passive-skill:hover:not(.cant){border-color:rgba(75,157,232,.45);background:#101520}
+.hu.cant{opacity:.34;cursor:default}
+.hu-ico{font-size:1.25rem;flex-shrink:0}
+.hu-body{flex:1}
+.hu-name{font-family:var(--font-h);font-size:.63rem;letter-spacing:.04em;margin-bottom:2px}
+.hu-desc{font-size:10.5px;color:var(--muted)}
+.hu-cost{font-family:var(--font-h);font-size:.7rem;color:var(--ruby);flex-shrink:0;text-align:right;min-width:42px}
+.hu.passive-skill .hu-cost{color:var(--sapphire)}
+
+/* ── EXPEDITIONS ── */
+.exp-list{display:flex;flex-direction:column;gap:7px}
+.exp{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 12px}
+.exp.exp-locked{opacity:.38}
+.exp-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.exp-ico{font-size:1.55rem;flex-shrink:0}
+.exp-info{flex:1}
+.exp-name{font-family:var(--font-h);font-size:.67rem;letter-spacing:.04em;margin-bottom:2px}
+.exp-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.exp-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.exp-tag{font-size:9px;border:1px solid;border-radius:4px;padding:2px 6px}
+.exp-tag.cost{border-color:rgba(232,75,107,.3);color:var(--ruby);background:rgba(232,75,107,.06)}
+.exp-tag.wave{border-color:rgba(75,157,232,.3);color:var(--sapphire);background:rgba(75,157,232,.06)}
+.exp-tag.reward{border-color:rgba(232,184,75,.25);color:var(--gold);background:rgba(232,184,75,.06)}
+.exp-tag.gem{border-color:rgba(75,232,160,.25);color:var(--emerald);background:rgba(75,232,160,.06)}
+.exp-btn{width:100%;padding:7px;border:1px solid var(--border);border-radius:7px;font-family:var(--font-h);font-size:.59rem;letter-spacing:.07em;cursor:pointer;transition:all .2s;background:var(--s2);color:var(--text);margin-top:8px}
+.exp-btn.go{border-color:rgba(75,157,232,.38);color:var(--sapphire);background:rgba(75,157,232,.05)}
+.exp-btn.go:hover{background:rgba(75,157,232,.1)}
+.exp-btn.active-exp{border-color:rgba(75,232,160,.32);color:var(--emerald);background:rgba(75,232,160,.04);cursor:default}
+.exp-btn:disabled{opacity:.3;cursor:default}
+.exp-tbar{height:3px;background:var(--border);border-radius:10px;margin-top:6px;overflow:hidden}
+.exp-tfill{height:100%;background:var(--sapphire);transition:width .5s linear}
+
+/* ── ALCHEMY ── */
+.alch-intro{font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:9px}
+.cauldron{background:var(--card);border:1px solid rgba(160,75,232,.28);border-radius:12px;padding:11px;margin-bottom:9px;text-align:center}
+.cauldron-ico{font-size:2.5rem;display:block;margin-bottom:7px;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px}
+.slot{border:1px dashed rgba(160,75,232,.28);border-radius:8px;padding:7px 4px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(160,75,232,.04);min-height:55px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.slot:hover{border-color:rgba(160,75,232,.5)}
+.slot.filled{border-style:solid;border-color:rgba(160,75,232,.48);background:rgba(160,75,232,.09)}
+.slot-ico{font-size:1.3rem;margin-bottom:2px}
+.slot-name{font-size:8px;color:var(--amethyst);font-family:var(--font-h);letter-spacing:.04em}
+.slot-empty{font-size:10px;color:var(--muted)}
+.brew-btn{width:100%;padding:7px;border:1px solid rgba(160,75,232,.38);border-radius:8px;font-family:var(--font-h);font-size:.6rem;letter-spacing:.09em;cursor:pointer;transition:all .2s;background:rgba(160,75,232,.07);color:var(--amethyst)}
+.brew-btn:hover:not(:disabled){background:rgba(160,75,232,.14)}
+.brew-btn:disabled{opacity:.3;cursor:default}
+.inv-title{font-family:var(--font-h);font-size:.57rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.inv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+.inv-item{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 4px;text-align:center;cursor:pointer;transition:all .2s}
+.inv-item:hover{border-color:rgba(160,75,232,.4)}
+.inv-ico{font-size:1.2rem;display:block;margin-bottom:2px}
+.inv-name{font-size:8px;font-family:var(--font-h);letter-spacing:.03em}
+.inv-qty{font-size:8px;color:var(--muted);margin-top:1px}
+.recipe-grid{display:flex;flex-direction:column;gap:5px}
+.recipe-card{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .15s}
+.recipe-card:hover{border-color:rgba(160,75,232,.35)}
+.recipe-card.unknown{opacity:.42;filter:blur(.4px);cursor:default}
+.pot-ico{font-size:1.25rem;flex-shrink:0}
+.pot-body{flex:1}
+.pot-name{font-family:var(--font-h);font-size:.63rem;letter-spacing:.04em;margin-bottom:2px}
+.pot-desc{font-size:10.5px;color:var(--muted)}
+.pot-ing{font-size:9px;color:var(--amethyst);margin-top:2px}
+.pot-action{font-family:var(--font-h);font-size:.58rem;color:var(--amethyst);flex-shrink:0}
+.potions-owned{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.potion-item{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 10px;cursor:pointer;transition:all .15s}
+.potion-item:hover{border-color:rgba(160,75,232,.35)}
+
+/* ── GEM SHOP ── */
+.gem-balance-card{display:flex;align-items:center;gap:10px;background:rgba(75,232,160,.05);border:1px solid rgba(75,232,160,.18);border-radius:10px;padding:10px 12px;margin-bottom:11px}
+.gem-balance-ico{font-size:1.8rem}
+.gem-balance-val{font-family:var(--font-h);font-size:1.4rem;color:var(--emerald);line-height:1}
+.gem-earn-info{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:11px;font-size:11.5px;color:var(--muted);line-height:1.75}
+.gem-earn-info strong{color:var(--emerald)}
+.relic-store-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rstore-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .2s}
+.rstore-item:hover{border-color:rgba(75,232,160,.35)}
+.rstore-ico{font-size:1.8rem;display:block;margin-bottom:4px}
+.rstore-name{font-family:var(--font-h);font-size:.63rem;letter-spacing:.04em;margin-bottom:2px}
+.rstore-flavor{font-size:9px;color:var(--muted);margin-bottom:6px;line-height:1.35}
+.rstore-price{display:inline-flex;align-items:center;gap:3px;background:rgba(75,232,160,.08);border:1px solid rgba(75,232,160,.22);border-radius:20px;padding:2px 8px;font-family:var(--font-h);font-size:.65rem;color:var(--emerald)}
+.rstore-item.cant-afford .rstore-price{border-color:rgba(255,92,92,.18);background:rgba(255,92,92,.05);color:var(--ruby)}
+.donate-packs{display:flex;flex-direction:column;gap:6px}
+.pack{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;cursor:pointer;transition:all .2s}
+.pack:hover{border-color:rgba(232,184,75,.38);background:#131620}
+.pack.featured{border-color:rgba(232,184,75,.38);background:rgba(232,184,75,.04)}
+.pack-ico{font-size:1.4rem;flex-shrink:0}
+.pack-info{flex:1}
+.pack-name{font-family:var(--font-h);font-size:.68rem;letter-spacing:.04em;margin-bottom:2px}
+.pack-desc{font-size:10.5px;color:var(--muted)}
+.pack-bonus{font-size:9.5px;color:var(--emerald);margin-top:2px}
+.pack-price{font-family:var(--font-h);font-size:.8rem;color:var(--gold);flex-shrink:0}
+.pack-badge{display:inline-block;background:var(--ruby);color:#fff;font-size:7px;font-family:var(--font-h);letter-spacing:.07em;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+.ad-remove-card{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid rgba(75,157,232,.22);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .2s;margin-bottom:8px}
+.ad-remove-card:hover{border-color:rgba(75,157,232,.42)}
+.ad-remove-card.owned{border-color:rgba(75,232,160,.28);cursor:default}
+.ad-remove-ico{font-size:1.45rem;flex-shrink:0}
+.ad-remove-info{flex:1}
+.ad-remove-title{font-family:var(--font-h);font-size:.68rem;letter-spacing:.04em;color:var(--sapphire);margin-bottom:2px}
+.ad-remove-card.owned .ad-remove-title{color:var(--emerald)}
+.ad-remove-desc{font-size:10.5px;color:var(--muted)}
+.ad-remove-price{font-family:var(--font-h);font-size:.8rem;color:var(--sapphire);flex-shrink:0}
+.ad-slot{background:var(--s2);border:1px dashed var(--border);border-radius:6px;padding:7px;text-align:center;font-size:10px;color:var(--muted);letter-spacing:.07em;margin:7px 0}
+
+/* ── DAILY ── */
+.quest-list{display:flex;flex-direction:column;gap:7px}
+.quest{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.quest.done-q{border-color:rgba(75,232,160,.38);background:rgba(75,232,160,.03)}
+.quest-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
+.quest-ico{font-size:1.4rem;flex-shrink:0}
+.quest-info{flex:1}
+.quest-name{font-family:var(--font-h);font-size:.66rem;letter-spacing:.04em;margin-bottom:2px}
+.quest-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.quest-reward{font-size:9.5px;color:var(--emerald);margin-top:3px;font-family:var(--font-h)}
+.qp-track{height:5px;background:var(--border);border-radius:10px;margin-bottom:4px;overflow:hidden}
+.qp-fill{height:100%;background:linear-gradient(90deg,#1a7a50,var(--emerald));border-radius:10px;transition:width .4s}
+.quest-status{font-size:10px;color:var(--muted);text-align:right}
+.quest-claim-btn{width:100%;padding:6px;border:1px solid rgba(75,232,160,.38);border-radius:7px;font-family:var(--font-h);font-size:.58rem;letter-spacing:.07em;cursor:pointer;background:rgba(75,232,160,.07);color:var(--emerald);margin-top:6px;transition:all .2s}
+.quest-claim-btn:hover{background:rgba(75,232,160,.13)}
+.all-done-banner{background:linear-gradient(135deg,rgba(75,232,160,.08),rgba(75,157,232,.06));border:1px solid rgba(75,232,160,.28);border-radius:10px;padding:10px 12px;text-align:center;margin-bottom:9px}
+.adb-title{font-family:var(--font-h);font-size:.7rem;letter-spacing:.06em;color:var(--emerald);margin-bottom:3px}
+.adb-desc{font-size:11px;color:var(--muted)}
+.claim-all-btn{margin-top:7px;padding:6px 16px;background:var(--emerald);color:#071008;border:none;border-radius:7px;font-family:var(--font-h);font-size:.62rem;letter-spacing:.07em;cursor:pointer}
+.quest-timer{font-size:10px;color:var(--muted);text-align:center;margin-top:7px}
+
+/* ── PRESTIGE ── */
+.prestige-wrap{text-align:center;padding:6px 0}
+.pr-orb{width:88px;height:88px;border-radius:50%;background:radial-gradient(circle at 33% 33%,#3b1a6e,#1a0b33);border:2px solid rgba(192,132,252,.55);box-shadow:0 0 28px rgba(184,127,255,.18);margin:10px auto;display:flex;align-items:center;justify-content:center;font-size:2.2rem}
+.pr-title{font-family:var(--font-h);font-size:1.35rem;color:#b87fff;letter-spacing:.1em;margin-bottom:5px}
+.pr-desc{font-size:11.5px;color:var(--muted);line-height:1.6;max-width:250px;margin:0 auto 11px}
+.pr-box{background:rgba(184,127,255,.07);border:1px solid rgba(184,127,255,.18);border-radius:10px;padding:9px;margin-bottom:11px}
+.pr-box p{font-size:11.5px;color:#b87fff;font-weight:600;line-height:1.7}
+.pr-unlocks{background:rgba(75,157,232,.06);border:1px solid rgba(75,157,232,.18);border-radius:8px;padding:8px 11px;margin-bottom:11px;font-size:11px;color:var(--sapphire);line-height:1.75}
+.pr-btn{background:linear-gradient(135deg,#6d28d9,#b87fff);border:none;border-radius:10px;color:#fff;font-family:var(--font-h);font-size:.9rem;letter-spacing:.1em;padding:10px 24px;cursor:pointer;width:100%;box-shadow:0 0 12px rgba(109,40,217,.22)}
+.pr-btn:hover{opacity:.9}
+.pr-btn:disabled{opacity:.22;cursor:default}
+.pr-req{font-size:11px;color:var(--muted);margin-top:7px}
+
+/* ── TROPHIES ── */
+.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ach{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center}
+.ach.unlocked{border-color:rgba(75,232,160,.38);background:rgba(75,232,160,.03)}
+.ach-ico{font-size:1.4rem;margin-bottom:3px;filter:grayscale(1)}
+.ach.unlocked .ach-ico{filter:none}
+.ach-nm{font-family:var(--font-h);font-size:.58rem;letter-spacing:.04em;margin-bottom:2px}
+.ach.unlocked .ach-nm{color:var(--emerald)}
+.ach-ds{font-size:9px;color:var(--muted);line-height:1.4}
+
+/* ── BUY QUANTITY SELECTOR ── */
+.buy-qty-row{display:flex;gap:4px;margin-bottom:8px;align-items:center}
+.buy-qty-lbl{font-size:9px;color:var(--muted);font-family:var(--font-h);letter-spacing:.07em;margin-right:2px}
+.qty-btn{flex:1;padding:4px 2px;border:1px solid var(--border);border-radius:6px;background:var(--s2);font-family:var(--font-h);font-size:.58rem;color:var(--muted);cursor:pointer;transition:all .15s;text-align:center}
+.qty-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(232,184,75,.08)}
+.qty-btn:hover:not(.active){border-color:rgba(232,184,75,.3);color:var(--text)}
+
+/* ── SOUL SHARDS ── */
+.shard-display{display:flex;align-items:center;gap:6px;background:rgba(232,75,107,.07);border:1px solid rgba(232,75,107,.22);border-radius:8px;padding:6px 10px;margin-bottom:8px}
+.shard-ico{font-size:1.1rem}
+.shard-val{font-family:var(--font-h);font-size:.9rem;color:var(--ruby)}
+.shard-lbl{font-size:10px;color:var(--muted)}
+
+/* ── DEV MODE ── */
+.dev-panel{background:var(--card);border:1px solid rgba(75,232,160,.3);border-radius:10px;padding:13px;margin-bottom:9px}
+.dev-title{font-family:var(--font-h);font-size:.78rem;letter-spacing:.08em;color:var(--emerald);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
+.dev-btn{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:8px;font-family:var(--font-h);font-size:.6rem;letter-spacing:.06em;color:var(--emerald);cursor:pointer;transition:all .2s;text-align:center}
+.dev-btn:hover{border-color:var(--emerald);background:rgba(75,232,160,.08)}
+.dev-btn.ruby{color:var(--ruby);border-color:transparent}
+.dev-btn.ruby:hover{border-color:var(--ruby);background:rgba(232,75,107,.08)}
+.dev-btn.gold{color:var(--gold);border-color:transparent}
+.dev-btn.gold:hover{border-color:var(--gold);background:rgba(232,184,75,.08)}
+.dev-btn.sapphire{color:var(--sapphire);border-color:transparent}
+.dev-btn.sapphire:hover{border-color:var(--sapphire);background:rgba(75,157,232,.08)}
+.dev-btn.amethyst{color:var(--amethyst);border-color:transparent}
+.dev-btn.amethyst:hover{border-color:var(--amethyst);background:rgba(160,75,232,.08)}
+.dev-input-row{display:flex;gap:6px;align-items:center;margin-top:6px}
+.dev-input{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:6px 9px;font-family:var(--font-b);font-size:12px;color:var(--text);flex:1;outline:none}
+.dev-input:focus{border-color:var(--emerald)}
+
+/* ── TUTORIAL ── */
+.tut-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0 0 20px;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.tut-box{background:var(--card);border:1px solid rgba(232,184,75,.35);border-radius:18px 18px 18px 18px;padding:20px 18px 16px;max-width:380px;width:90%;box-shadow:0 0 40px rgba(232,184,75,.12);position:relative}
+.tut-steps{display:flex;gap:4px;justify-content:center;margin-bottom:14px}
+.tut-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .2s}
+.tut-dot.active{background:var(--gold)}
+.tut-ico{font-size:2.8rem;display:block;text-align:center;margin-bottom:10px}
+.tut-title{font-family:var(--font-h);font-size:.9rem;letter-spacing:.08em;color:var(--gold);text-align:center;margin-bottom:8px}
+.tut-body{font-size:12.5px;color:var(--text);line-height:1.7;text-align:center;margin-bottom:16px}
+.tut-highlight{color:var(--gold);font-weight:600}
+.tut-btn{width:100%;padding:9px;border:1px solid rgba(232,184,75,.4);border-radius:10px;background:linear-gradient(135deg,rgba(232,184,75,.1),rgba(232,184,75,.04));font-family:var(--font-h);font-size:.72rem;letter-spacing:.1em;color:var(--gold);cursor:pointer;transition:all .2s}
+.tut-btn:hover{background:rgba(232,184,75,.15)}
+.tut-skip{display:block;text-align:center;font-size:10px;color:var(--muted);margin-top:8px;cursor:pointer;letter-spacing:.06em}
+.tut-skip:hover{color:var(--text)}
+.tut-highlight-elem{position:relative;z-index:201;pointer-events:none}
+
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--emerald);color:#071008;font-weight:700;font-size:11.5px;padding:7px 14px;border-radius:22px;z-index:9999;transition:transform .3s;white-space:nowrap;pointer-events:none;font-family:var(--font-h);letter-spacing:.04em}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.bad{background:var(--ruby);color:#fff}
+.toast.info{background:var(--sapphire);color:#001520}
+.toast.prestige{background:#b87fff;color:#1a0b33}
+.toast.gem{background:var(--emerald);color:#071008}
+.toast.donate{background:var(--gold);color:#1a1000}
+.toast.recipe{background:var(--amethyst);color:#fff}
+.toast.drop{background:var(--amber);color:#1a0e00}
+.toast.dev{background:#0f2b0f;color:var(--emerald);border:1px solid var(--emerald)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="logo" id="logo-tap">TapRise</div>
+  <div class="hdr-right">
+    <div class="hdr-pill"><span class="ico">🪙</span><span class="val" id="h-coins">0</span></div>
+    <div class="hdr-pill gem"><span class="ico">💎</span><span class="val" id="h-gems">0</span></div>
+    <div class="ad-badge" id="ad-badge">ADS</div>
+  </div>
+</div>
+
+<div class="res-bar">
+  <div class="res"><div class="v" id="s-cpc">1</div><div class="l">Per Click</div></div>
+  <div class="res"><div class="v" id="s-cps">0</div><div class="l">Per Sec</div></div>
+  <div class="res"><div class="v" id="s-wave">1</div><div class="l">Wave</div></div>
+</div>
+
+<div class="click-zone">
+  <div class="lv-row">
+    <span class="lv-name" id="lv-label">Level 1</span>
+    <span class="lv-xp" id="lv-xp">0 / 100 XP</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="btn-wrap">
+    <div class="orbit"></div><div class="orbit orbit2"></div>
+    <div id="clk">🪙</div>
+  </div>
+  <div class="cps-lbl" id="cps-lbl">+0 coins/sec</div>
+
+  <!-- FRENZY BAR -->
+  <div class="frenzy-wrap" id="frenzy-wrap">
+    <div class="frenzy-header">
+      <span class="frenzy-label charging" id="frenzy-label">⚡ Frenzy</span>
+      <span class="frenzy-status" id="frenzy-status"></span>
+    </div>
+    <div class="frenzy-track">
+      <div class="frenzy-fill charging" id="frenzy-fill" style="width:0%"></div>
+    </div>
+    <div class="frenzy-hint" id="frenzy-hint">Tap to charge · 100 taps to activate</div>
+    <button class="frenzy-ad-btn" id="frenzy-ad-btn">📺 Watch Ad — Skip Cooldown</button>
+  </div>
+</div>
+
+<div id="upg-nudge" class="upg-nudge">⚒️ <span id="nudge-txt">Upgrade available!</span></div>
+
+<div class="bottom-dock" id="bottom-dock">
+  <button class="collapse-btn" id="collapse-btn">
+    <span class="cb-ico">▼</span>
+    <span id="collapse-lbl">HIDE PANEL</span>
+  </button>
+  <div class="bottom-pane" id="bottom-pane">
+    <div class="tabs" id="tab-bar">
+      <div class="tab on"  id="tab-upgrades"><span class="ti">⚒️</span>Forge</div>
+      <div class="tab"     id="tab-combat"><span class="ti">⚔️</span>Combat</div>
+      <div class="tab"     id="tab-expeditions"><span class="ti">🗺️</span>Quests</div>
+      <div class="tab"     id="tab-alchemy"><span class="ti">⚗️</span>Alchemy</div>
+      <div class="tab"     id="tab-shop"><span class="ti">💎</span>Shop</div>
+      <div class="tab"     id="tab-daily"><span class="ti">🎲</span>Daily</div>
+      <div class="tab"     id="tab-prestige"><span class="ti">✨</span>Ascend</div>
+    </div>
+    <div class="panel on" id="panel-upgrades">
+      <div id="forge-drop-notif"></div>
+      <div class="upg-list" id="upg-list"></div>
+    </div>
+    <div class="panel" id="panel-combat"></div>
+    <div class="panel" id="panel-expeditions"></div>
+    <div class="panel" id="panel-alchemy"></div>
+    <div class="panel" id="panel-shop"></div>
+    <div class="panel" id="panel-daily"></div>
+    <div class="panel" id="panel-prestige">
+      <div class="prestige-wrap">
+        <div class="pr-title">Ascension</div>
+        <div class="pr-orb">✨</div>
+        <p class="pr-desc">Transcend your current run. Upgrades reset — but your legacy grows stronger.</p>
+        <div class="pr-box"><p id="pr-bonus-text">—</p></div>
+        <div class="pr-unlocks" id="pr-unlocks">—</div>
+        <button class="pr-btn" id="pr-btn" disabled>ASCEND</button>
+        <p class="pr-req" id="pr-req">—</p>
+      </div>
+    </div>
+    <div class="panel" id="panel-trophies"><div class="ach-grid" id="ach-grid"></div></div>
+    <div class="panel" id="panel-dev"></div>
+  </div><!-- /bottom-pane -->
+</div><!-- /bottom-dock -->
+
+<!-- TUTORIAL OVERLAY -->
+<div class="tut-overlay" id="tut-overlay" style="display:none"></div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════ */
+
+/*
+  Forge unlock chain:
+  Each upgrade has an `unlockReq` = {idx, level} meaning "previous upgrade idx must be at level X"
+  No max level. Cost = base * (scale ^ level)
+*/
+const UPGRADES = [
+  // idx 0 — always available
+  { name:'Lucky Finger',    ico:'☝️', desc:'+1 coin/click',          base:10,   scale:2.1,  unlockReq:null,      e:l=>({cpc:l,    cps:0,   mult:1}) },
+  // idx 1 — unlocks when 0 >= 3
+  { name:'Coin Magnet',     ico:'🧲', desc:'+3 coins/click',         base:60,   scale:2.2,  unlockReq:{idx:0,lv:3}, e:l=>({cpc:l*3,  cps:0,   mult:1}) },
+  // idx 2 — unlocks when 1 >= 3
+  { name:'Gold Vein',       ico:'⛏️', desc:'+2 coins/sec',           base:130,  scale:2.25, unlockReq:{idx:1,lv:3}, e:l=>({cpc:0,    cps:l*2, mult:1}) },
+  // idx 3 — unlocks when 2 >= 3
+  { name:'Tap Frenzy',      ico:'⚡', desc:'+10 coins/click',        base:400,  scale:2.3,  unlockReq:{idx:2,lv:3}, e:l=>({cpc:l*10, cps:0,   mult:1}) },
+  // idx 4 — unlocks when 3 >= 3
+  { name:'Coin Factory',    ico:'🏭', desc:'+8 coins/sec',           base:900,  scale:2.35, unlockReq:{idx:3,lv:3}, e:l=>({cpc:0,    cps:l*8, mult:1}) },
+  // idx 5 — unlocks when 4 >= 3
+  { name:'Midas Touch',     ico:'👑', desc:'×1.8 all income / level',base:3000, scale:2.5,  unlockReq:{idx:4,lv:3}, e:l=>({cpc:0,    cps:0,   mult:Math.pow(1.8,l)}) },
+  // idx 6 — unlocks when 5 >= 2
+  { name:'Time Warp',       ico:'⏳', desc:'+20 coins/sec',          base:8000, scale:2.6,  unlockReq:{idx:5,lv:2}, e:l=>({cpc:0,    cps:l*20,mult:1}) },
+  // idx 7 — unlocks when 6 >= 2
+  { name:'Arcane Lens',     ico:'🔮', desc:'+50 coins/click',        base:18000,scale:2.7,  unlockReq:{idx:6,lv:2}, e:l=>({cpc:l*50, cps:0,   mult:1}) },
+  // idx 8 — unlocks when 7 >= 2
+  { name:'Cosmic Engine',   ico:'🌌', desc:'×2.5 all income / level',base:50000,scale:2.8,  unlockReq:{idx:7,lv:2}, e:l=>({cpc:0,    cps:0,   mult:Math.pow(2.5,l)}) },
+];
+
+const HERO_GEAR = [
+  { name:'Iron Sword',      ico:'🗡️', desc:'+5 ATK',        shardCost:15,   stat:'atk',   amt:5  },
+  { name:'Leather Helm',    ico:'🪖', desc:'+10 DEF',       shardCost:25,   stat:'def',   amt:10 },
+  { name:'Vitality Gem',    ico:'💠', desc:'+30 Max HP',    shardCost:40,   stat:'maxhp', amt:30 },
+  { name:'Rune Blade',      ico:'⚔️', desc:'+15 ATK',       shardCost:80,   stat:'atk',   amt:15 },
+  { name:'Dragon Mail',     ico:'🛡️', desc:'+25 DEF',       shardCost:150,  stat:'def',   amt:25 },
+  { name:'Phoenix Core',    ico:'🔥', desc:'+10% Crit',     shardCost:250,  stat:'crit',  amt:10 },
+  { name:'Titan Gauntlets', ico:'🥊', desc:'+35 ATK',       shardCost:500,  stat:'atk',   amt:35 },
+  { name:'Void Armor',      ico:'🌑', desc:'+55 DEF',       shardCost:900,  stat:'def',   amt:55 },
+  { name:'Elder Crown',     ico:'👑', desc:'+100 Max HP',   shardCost:1500, stat:'maxhp', amt:100},
+];
+
+const HERO_SKILLS = [
+  { name:'Vampiric Strike',  ico:'🩸', desc:'Heal 3 HP on every kill',        shardCost:80,   skill:'vampiric',  val:3   },
+  { name:'Lucky Looter',     ico:'🍀', desc:'+5% gem & relic drop chance',     shardCost:120,  skill:'luckDrop',  val:5   },
+  { name:'Berserker',        ico:'😤', desc:'+35% ATK when HP < 50%',          shardCost:200,  skill:'berserker', val:1.35},
+  { name:'Iron Will',        ico:'💪', desc:'Regen 2 HP each combat tick',     shardCost:350,  skill:'regen',     val:2   },
+  { name:'Eagle Eye',        ico:'🦅', desc:'Crits deal ×3 dmg (was ×2)',      shardCost:600,  skill:'eagleEye',  val:3   },
+  { name:'Fortune Finder',   ico:'💰', desc:'+30% bonus coins per kill',       shardCost:900,  skill:'goldFind',  val:1.3 },
+  { name:'Gem Sense',        ico:'💎', desc:'+8% gem drop chance',             shardCost:1400, skill:'gemSense',  val:8   },
+  { name:'Battle Hymn',      ico:'🎺', desc:'+10% all stats per owned skill',  shardCost:2500, skill:'battleHymn',val:0.1 },
+];
+
+/* More diverse enemy pool, with tier so they unlock as waves increase */
+const ENEMY_POOL = [
+  /* Tier 0 – waves 1-7 */
+  { name:'Goblin Scout',  ico:'👺', baseHP:18,  baseAtk:3,  baseDef:1,  reward:6,   tier:0 },
+  { name:'Forest Bat',    ico:'🦇', baseHP:14,  baseAtk:4,  baseDef:0,  reward:5,   tier:0 },
+  { name:'Slime',         ico:'🟢', baseHP:25,  baseAtk:2,  baseDef:2,  reward:7,   tier:0 },
+  { name:'Skeleton',      ico:'💀', baseHP:22,  baseAtk:5,  baseDef:1,  reward:9,   tier:0 },
+  /* Tier 1 – waves 8-15 */
+  { name:'Orc Warrior',   ico:'👹', baseHP:50,  baseAtk:8,  baseDef:4,  reward:18,  tier:1 },
+  { name:'Dark Mage',     ico:'🧙', baseHP:40,  baseAtk:12, baseDef:2,  reward:22,  tier:1 },
+  { name:'Stone Golem',   ico:'🗿', baseHP:80,  baseAtk:6,  baseDef:10, reward:26,  tier:1 },
+  { name:'Werewolf',      ico:'🐺', baseHP:60,  baseAtk:10, baseDef:5,  reward:24,  tier:1 },
+  /* Tier 2 – waves 16-25 */
+  { name:'Vampire',       ico:'🧛', baseHP:90,  baseAtk:14, baseDef:5,  reward:38,  tier:2 },
+  { name:'Medusa',        ico:'🐍', baseHP:75,  baseAtk:16, baseDef:3,  reward:42,  tier:2 },
+  { name:'Banshee',       ico:'👻', baseHP:65,  baseAtk:18, baseDef:1,  reward:40,  tier:2 },
+  { name:'Troll',         ico:'🧌', baseHP:110, baseAtk:11, baseDef:12, reward:36,  tier:2 },
+  /* Tier 3 – waves 26+ */
+  { name:'Lich',          ico:'💀', baseHP:140, baseAtk:20, baseDef:8,  reward:60,  tier:3 },
+  { name:'Wyvern',        ico:'🦎', baseHP:170, baseAtk:22, baseDef:12, reward:72,  tier:3 },
+  { name:'Shadow Demon',  ico:'😈', baseHP:120, baseAtk:25, baseDef:6,  reward:68,  tier:3 },
+  { name:'Ancient Golem', ico:'⚙️', baseHP:220, baseAtk:18, baseDef:18, reward:75,  tier:3 },
+  /* BOSSES (every 10 waves) */
+  { name:'Dragon',        ico:'🐲', baseHP:280, baseAtk:22, baseDef:14, reward:130, tier:4, boss:true },
+  { name:'Demon Lord',    ico:'👿', baseHP:420, baseAtk:30, baseDef:20, reward:220, tier:4, boss:true },
+  { name:'Lich King',     ico:'💎', baseHP:600, baseAtk:38, baseDef:28, reward:380, tier:4, boss:true },
+];
+
+/* Expeditions — high wave req, coin cost, random rewards */
+const EXP_DEFS = [
+  {
+    name:'Ancient Ruins',  ico:'🏛️',
+    desc:'Crumbling temples. A relatively safe first expedition.',
+    minWave:15, coinCost:200, dur:60,
+    rewardPool:[
+      {type:'coins',min:400, max:800},
+      {type:'xp',   min:30,  max:60},
+      {type:'relic',ids:['ember'],chance:50},
+    ],
+    gemChance:0,
+  },
+  {
+    name:'Cursed Forest',  ico:'🌲',
+    desc:'Ancient darkness lurks between the trees.',
+    minWave:25, coinCost:600, dur:120,
+    rewardPool:[
+      {type:'coins',min:1200,max:2400},
+      {type:'xp',   min:60,  max:120},
+      {type:'relic',ids:['ember','titan'],chance:60},
+    ],
+    gemChance:10,
+  },
+  {
+    name:'Mountain Pass',  ico:'⛰️',
+    desc:'Treacherous cliffs hiding rare mineral veins.',
+    minWave:40, coinCost:2000, dur:240,
+    rewardPool:[
+      {type:'coins',min:4000,max:8000},
+      {type:'xp',   min:100, max:200},
+      {type:'relic',ids:['titan','moon'],chance:65},
+      {type:'gems', min:2,   max:4},
+    ],
+    gemChance:30,
+  },
+  {
+    name:'Sunken Temple',  ico:'🌊',
+    desc:'Legendary relics preserved in the deep.',
+    minWave:60, coinCost:7500, dur:480,
+    rewardPool:[
+      {type:'coins',min:15000,max:30000},
+      {type:'xp',   min:200,  max:400},
+      {type:'relic',ids:['moon','dragon'],chance:70},
+      {type:'gems', min:3,    max:6},
+    ],
+    gemChance:50,
+  },
+  {
+    name:"Dragon's Lair",  ico:'🔥',
+    desc:'Only the mightiest dare enter. Extraordinary rewards.',
+    minWave:100, coinCost:30000, dur:900,
+    rewardPool:[
+      {type:'coins',min:60000,max:120000},
+      {type:'xp',   min:400,  max:800},
+      {type:'relic',ids:['dragon','void'],chance:80},
+      {type:'gems', min:6,    max:12},
+    ],
+    gemChance:100,
+  },
+];
+
+const RELIC_DEFS = [
+  { id:'ember', name:'Ember Crystal',ico:'🔮',flavor:'Volatile ancient energy',  gemCost:3  },
+  { id:'titan', name:'Titan Shard',  ico:'⚙️',flavor:'Heavy industrial fragment',gemCost:5  },
+  { id:'moon',  name:'Moon Fragment',ico:'🌙',flavor:'Rare celestial debris',    gemCost:8  },
+  { id:'dragon',name:'Dragon Scale', ico:'🐉',flavor:'Near-mythical material',   gemCost:15 },
+  { id:'void',  name:'Void Essence', ico:'🌀',flavor:'Unstable dark matter',     gemCost:25 },
+];
+
+const ALL_RECIPES = [
+  /* All start unknown - discovered by brewing correct combo */
+  { id:'coin_elixir',  known:false, name:'Coin Elixir',   ico:'🟡',desc:'×2 coins 60s',       ing:['ember','ember'],        effect:'coinMult',  dur:60,  val:2   },
+  { id:'speed_brew',   known:false, name:'Speed Brew',     ico:'🟢',desc:'×3 passive 30s',     ing:['titan','ember'],        effect:'cpsMult',   dur:30,  val:3   },
+  { id:'battle_tonic', known:false, name:'Battle Tonic',   ico:'🔴',desc:'+50% ATK 90s',       ing:['moon','titan'],         effect:'heroAtk',   dur:90,  val:1.5 },
+  { id:'shield_flask', known:false, name:'Shield Flask',   ico:'🔵',desc:'Immune 20s',         ing:['dragon','void'],        effect:'shield',    dur:20,  val:0   },
+  { id:'grand_elixir', known:false, name:'Grand Elixir',   ico:'🟣',desc:'×5 all 30s',         ing:['void','dragon','moon'], effect:'allMult',   dur:30,  val:5   },
+  /* Discoverable from combat */
+  { id:'phantom_oil',  known:false, name:'Phantom Oil',    ico:'👻',desc:'×2 XP 60s',          ing:['ember','moon'],         effect:'xpMult',    dur:60,  val:2,   dropFrom:'tier0', dropChance:8  },
+  { id:'storm_vial',   known:false, name:'Storm Vial',     ico:'⚡',desc:'×4 coins 20s',        ing:['void','titan'],         effect:'stormCoin', dur:20,  val:4,   dropFrom:'tier1', dropChance:6  },
+  { id:'dragon_breath',known:false, name:'Dragon Breath',  ico:'🐉',desc:'×2 ATK+DEF 30s',     ing:['dragon','dragon'],      effect:'dragonBuff',dur:30,  val:2,   dropFrom:'boss',  dropChance:40 },
+  { id:'shadow_shroud',known:false, name:'Shadow Shroud',  ico:'🌑',desc:"Can't die 10s",      ing:['void','moon','ember'],  effect:'invuln',    dur:10,  val:0,   dropFrom:'tier2', dropChance:5  },
+  { id:'lunar_tonic',  known:false, name:'Lunar Tonic',    ico:'🌕',desc:'×2 gem drops 90s',   ing:['moon','moon'],          effect:'gemMult',   dur:90,  val:2,   dropFrom:'tier3', dropChance:4  },
+];
+
+const QUEST_POOL = [
+  { ico:'👆',name:'Tap Addict',    desc:'Tap {n} times',           type:'clicks',  targets:[25,50,100,300],  rwd:'coins:50'  },
+  { ico:'💰',name:'Money Bags',    desc:'Earn {n} coins',          type:'earn',    targets:[500,2000,6000,20000],rwd:'xp:30' },
+  { ico:'⚔️',name:'Monster Slayer',desc:'Defeat {n} enemies',      type:'kills',   targets:[3,8,15,30],      rwd:'xp:60'   },
+  { ico:'🏛️',name:'Explorer',      desc:'Complete {n} expeditions',type:'expdone', targets:[1,2,3,5],        rwd:'coins:500' },
+  { ico:'⚗️',name:'Alchemist',     desc:'Brew {n} potions',        type:'brewed',  targets:[1,2,4,6],        rwd:'xp:100'  },
+  { ico:'🌊',name:'Wave Rider',    desc:'Reach wave {n}',          type:'wave',    targets:[5,15,30,50],     rwd:'coins:800' },
+];
+const ALL_QUESTS_GEM_BONUS = 3;
+
+const ACHS = [
+  { ico:'🪙',name:'First Tap',     desc:'Click once',                chk:()=>G.clicks>=1                  },
+  { ico:'💯',name:'Century',       desc:'100 clicks',                chk:()=>G.clicks>=100                },
+  { ico:'⚔️',name:'First Blood',   desc:'First enemy defeated',      chk:()=>G.totalKills>=1              },
+  { ico:'🐲',name:'Dragon Slayer', desc:'Defeat a Boss',             chk:()=>G.bossKills>=1               },
+  { ico:'🏛️',name:'Explorer',      desc:'Complete first expedition', chk:()=>G.totalExp>=1                },
+  { ico:'⚗️',name:'Alchemist',     desc:'Brew your first potion',    chk:()=>G.totalBrewed>=1             },
+  { ico:'📖',name:'Researcher',    desc:'Discover 3 recipes',        chk:()=>G.totalRecipesFound>=3       },
+  { ico:'💎',name:'Gem Hoarder',   desc:'Earn 50 gems total',        chk:()=>G.totalGems>=50              },
+  { ico:'💰',name:'Rich!',         desc:'Earn 10,000 coins',         chk:()=>G.totalCoins>=10000          },
+  { ico:'⬆️',name:'Levelhead',     desc:'Reach Level 5',             chk:()=>G.level>=5                   },
+  { ico:'🏆',name:'Veteran',       desc:'Reach Level 10',            chk:()=>G.level>=10                  },
+  { ico:'✨',name:'Ascended',      desc:'First ascension',           chk:()=>G.prestigeCount>=1           },
+  { ico:'🌊',name:'Wave Surfer',   desc:'Reach Wave 20',             chk:()=>G.wave>=20                   },
+  { ico:'🌟',name:'Transcended',   desc:'Prestige 3 times',          chk:()=>G.prestigeCount>=3           },
+];
+
+const GEM_PACKS = [
+  { name:'Starter Pack', ico:'💎',  gems:50,  bonus:0,   price:'$0.99', featured:false, desc:'Small boost to get started'  },
+  { name:'Adventurer',   ico:'💎💎', gems:150, bonus:30,  price:'$2.99', featured:false, desc:'Great value for explorers'   },
+  { name:'Champion',     ico:'👑',   gems:350, bonus:100, price:'$4.99', featured:true,  desc:'Best value — most popular!'  },
+  { name:'Legend Pack',  ico:'🌟',   gems:1000,bonus:400, price:'$9.99', featured:false, desc:'For the dedicated adventurer'},
+];
+
+/* Forge drop interval (waves) */
+const FORGE_DROP_INTERVAL = 15;
+
+/* ═══════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════ */
+const G = {
+  coins:0, totalCoins:0, clicks:0,
+  gems:0, totalGems:0,
+  level:1, xp:0,
+  prestigeCount:0, prestigeMult:1,
+  upgrades: Array(UPGRADES.length).fill(0),
+  heroGear: Array(HERO_GEAR.length).fill(false),
+  heroSkills: {},
+  soulShards: 0, totalSoulShards: 0,
+  hero: { hp:100, maxhp:100, atk:18, def:8, crit:5 },
+  heroPassive: { vampiric:0, luckDrop:0, berserker:0, regen:0, eagleEye:0, goldFind:1, gemSense:0, battleHymn:0 },
+  achievements: Array(ACHS.length).fill(false),
+  adFree: false,
+  // Combat
+  wave:1, lastForgeDropWave:0,
+  enemy:null, enemyHP:0,
+  combatLog: [], totalKills:0, bossKills:0,
+  heroCooldown:false, heroCooldownEndsAt:null,
+  // Expeditions
+  expeditions: EXP_DEFS.map(e=>({...e, active:false, endsAt:null, done:false, pendingRewards:null})),
+  totalExp:0,
+  // Alchemy
+  relicInventory:{}, slots:[null,null,null], potions:[],
+  activeEffects:{},  totalBrewed:0,
+  discoveredRecipes: [],
+  totalRecipesFound:0,
+  // Shop / misc
+  relicsBought:0,
+  forgeBuyQty: 1, // 1, 10, 100, or -1 for max
+  // Frenzy bar
+  frenzyTaps: 0,        // 0-100 charge
+  frenzyState: 'idle',  // idle | active | cooldown
+  frenzyEndsAt: null,   // when active/cooldown expires
+  // Quests
+  quests:[], questProg:{clicks:0,earn:0,kills:0,expdone:0,brewed:0,wave:1},
+  questsRefreshAt:0, allQuestsDone:0, allQuestsBonusClaimed:false,
+  // Dev mode
+  devTaps:0, devMode:false,
+};
+
+/* ═══════════════════════════════════════
+   PRESTIGE THRESHOLDS
+   First prestige at level 15, each +5 after
+   ═══════════════════════════════════════ */
+function prestigeReqLevel(count) { return 15 + count * 5; }
+
+/* ═══════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════ */
+const xpFor   = lvl  => Math.floor(100 * Math.pow(1.4, lvl - 1));
+const upgCost = i    => Math.floor(UPGRADES[i].base * Math.pow(UPGRADES[i].scale, G.upgrades[i]));
+const clamp   = (v,lo,hi) => Math.max(lo, Math.min(hi, v));
+const rand    = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+const rollPct = pct  => Math.random()*100 < pct;
+const fmt = n => {
+  if(n>=1e12)return(n/1e12).toFixed(1)+'T';
+  if(n>=1e9) return(n/1e9).toFixed(1)+'B';
+  if(n>=1e6) return(n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return(n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toString();
+};
+const fmtTime = s => {
+  if(s<60) return s+'s';
+  if(s<3600) return Math.floor(s/60)+'m '+Math.ceil(s%60)+'s';
+  return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m';
+};
+
+function isUpgUnlocked(i) {
+  const req = UPGRADES[i].unlockReq;
+  if(!req) return true;
+  return G.upgrades[req.idx] >= req.lv;
+}
+
+/* ═══════════════════════════════════════
+   COIN/GEM/XP EARN
+   ═══════════════════════════════════════ */
+function getStats() {
+  let cpc=1, cps=0, mult=1;
+  UPGRADES.forEach((u,i)=>{
+    if(!G.upgrades[i]) return;
+    const e=u.e(G.upgrades[i]);
+    cpc+=e.cpc; cps+=e.cps; mult*=e.mult;
+  });
+  const now=Date.now();
+  let coinMult=1, cpsMult=1, allMult=1;
+  if(G.activeEffects.coinMult &&now<G.activeEffects.coinMult.exp)  coinMult=G.activeEffects.coinMult.val;
+  if(G.activeEffects.cpsMult  &&now<G.activeEffects.cpsMult.exp)   cpsMult=G.activeEffects.cpsMult.val;
+  if(G.activeEffects.allMult  &&now<G.activeEffects.allMult.exp)   allMult=G.activeEffects.allMult.val;
+  if(G.activeEffects.stormCoin&&now<G.activeEffects.stormCoin.exp) coinMult*=G.activeEffects.stormCoin.val;
+  // Prestige coin-per-click flat bonus (5 coins per prestige level)
+  const prestigeClickBonus = G.prestigeCount * 5;
+  // Frenzy bonus: +200% click income when active
+  const frenzyMult = (G.frenzyState === 'active' && G.frenzyEndsAt && Date.now() < G.frenzyEndsAt) ? 3 : 1;
+  return {
+    cpc: Math.floor((cpc + prestigeClickBonus)*mult*G.prestigeMult*coinMult*allMult*frenzyMult),
+    cps: Math.floor(cps*mult*G.prestigeMult*cpsMult*allMult),
+  };
+}
+
+function heroStats() {
+  const now=Date.now();
+  let atk=G.hero.atk, def=G.hero.def, crit=G.hero.crit;
+  if(G.heroPassive.berserker && G.hero.hp < G.hero.maxhp*0.5) atk=Math.floor(atk*1.35);
+  if(G.activeEffects.heroAtk  && now<G.activeEffects.heroAtk.exp)   atk=Math.floor(atk*G.activeEffects.heroAtk.val);
+  if(G.activeEffects.dragonBuff&&now<G.activeEffects.dragonBuff.exp){atk*=2; def*=2;}
+  const critMult = G.heroPassive.eagleEye ? 3 : 2;
+  return {atk, def, crit, critMult};
+}
+
+function gemDropChance()   { return clamp(1 + G.level*0.1 + G.heroPassive.luckDrop + G.heroPassive.gemSense, 0, 15); }
+function relicDropChance() { return clamp(3 + G.level*0.2 + G.heroPassive.luckDrop, 0, 22); }
+
+/* ═══════════════════════════════════════
+   TOAST & FLOATERS
+   ═══════════════════════════════════════ */
+let toastT;
+function showToast(msg, type) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2700);
+}
+function spawnFloater(x, y, txt, col) {
+  const el=document.createElement('div');
+  el.className='floater'; el.textContent=txt;
+  el.style.color=col||'var(--gold)';
+  el.style.left=(x+rand(-16,16))+'px'; el.style.top=(y-12)+'px';
+  document.body.appendChild(el); setTimeout(()=>el.remove(),920);
+}
+
+/* ═══════════════════════════════════════
+   XP & LEVEL
+   ═══════════════════════════════════════ */
+function gainXP(amt) {
+  const now=Date.now();
+  if(G.activeEffects.xpMult && now<G.activeEffects.xpMult.exp) amt=Math.floor(amt*G.activeEffects.xpMult.val);
+  G.xp += amt;
+  while(G.xp >= xpFor(G.level)) {
+    G.xp -= xpFor(G.level);
+    G.level++;
+    showToast('🎉 Level '+G.level+'!');
+    checkPrestigeReady();
+  }
+}
+
+/* ═══════════════════════════════════════
+   CLICK
+   ═══════════════════════════════════════ */
+function handleClick(x, y) {
+  const {cpc} = getStats();
+  G.coins+=cpc; G.totalCoins+=cpc; G.clicks++;
+  G.questProg.clicks++; G.questProg.earn+=cpc;
+  // XP per click scales with prestige
+  const xpPerClick = 1 + Math.floor(G.level*0.15) + G.prestigeCount*2;
+  gainXP(xpPerClick);
+  // Frenzy bar charge
+  frenzyOnTap();
+  const frenzyActive = G.frenzyState==='active' && G.frenzyEndsAt && Date.now()<G.frenzyEndsAt;
+  spawnFloater(x, y, '+'+fmt(cpc), frenzyActive ? '#fff07a' : undefined);
+  renderAll(); checkAchievements(); updateQuests();
+}
+
+/* ═══════════════════════════════════════
+   FORGE
+   ═══════════════════════════════════════ */
+/* ── FORGE BUY QTY HELPER ── */
+function upgCostN(i, n) {
+  // Sum of geometric series: base * (scale^lv + scale^(lv+1) + ... + scale^(lv+n-1))
+  const u = UPGRADES[i]; const lv = G.upgrades[i];
+  let total = 0;
+  for(let k=0; k<n; k++) total += Math.floor(u.base * Math.pow(u.scale, lv+k));
+  return total;
+}
+function maxAffordable(i) {
+  const u = UPGRADES[i]; let lv = G.upgrades[i];
+  let budget = G.coins, count = 0;
+  while(true) {
+    const c = Math.floor(u.base * Math.pow(u.scale, lv+count));
+    if(budget < c) break;
+    budget -= c; count++;
+    if(count >= 10000) break; // safety
+  }
+  return count;
+}
+
+function buyUpg(i) {
+  const req = UPGRADES[i].unlockReq;
+  if(req && G.upgrades[req.idx] < req.lv) return;
+  const qty = G.forgeBuyQty === -1 ? maxAffordable(i) : G.forgeBuyQty;
+  if(qty <= 0) return;
+  const totalCost = upgCostN(i, qty);
+  if(G.coins < totalCost) {
+    // try buying as many as possible if qty>1
+    const can = maxAffordable(i);
+    if(can <= 0) return;
+    const cost2 = upgCostN(i, can);
+    G.coins -= cost2; G.upgrades[i] += can;
+    gainXP((8 + i*3) * can);
+  } else {
+    G.coins -= totalCost; G.upgrades[i] += qty;
+    gainXP((8 + i*3) * qty);
+  }
+  renderAll(); checkAchievements();
+}
+
+/* ═══════════════════════════════════════
+   COMBAT
+   ═══════════════════════════════════════ */
+function spawnEnemy() {
+  const isBoss = G.wave % 10 === 0;
+  const pool   = isBoss ? ENEMY_POOL.filter(e=>e.boss) : ENEMY_POOL.filter(e=>!e.boss);
+  const maxTier = clamp(Math.floor((G.wave-1)/8), 0, 3);
+  const tiered = pool.filter(e=>e.tier<=maxTier);
+  const base   = (tiered.length?tiered:pool)[rand(0,(tiered.length||pool.length)-1)];
+  const scale  = 1 + G.wave*0.15;
+  G.enemy = {
+    ...base,
+    hp:    Math.floor(base.baseHP  * scale),
+    atk:   Math.floor(base.baseAtk * scale),
+    def:   Math.floor(base.baseDef * scale),
+    reward:Math.floor(base.reward  * scale),
+    isBoss,
+  };
+  G.enemyHP = G.enemy.hp;
+}
+
+function addLog(msg, cls) {
+  G.combatLog.unshift({msg, cls});
+  if(G.combatLog.length > 12) G.combatLog.pop();
+}
+
+function rollCombatDrops(enemy) {
+  const drops=[];
+  const now=Date.now();
+  const gemMult=(G.activeEffects.gemMult&&now<G.activeEffects.gemMult.exp)?G.activeEffects.gemMult.val:1;
+  // Coins (always)
+  const coinBonus = Math.floor(G.wave * G.level * 0.35);
+  const goldMult  = G.heroPassive.goldFind || 1;
+  const totalCoin = Math.floor((enemy.reward + coinBonus) * goldMult);
+  G.coins+=totalCoin; G.totalCoins+=totalCoin; G.questProg.earn+=totalCoin;
+  // Soul Shards (combat currency) — always drop, bosses give more
+  const shardAmt = enemy.isBoss ? rand(5,10) + Math.floor(G.wave/5) : rand(1,3) + Math.floor(G.wave/10);
+  G.soulShards += shardAmt; G.totalSoulShards += shardAmt;
+  drops.push({type:'shard', amt:shardAmt});
+  // Gem drop
+  if(rollPct(gemDropChance() * gemMult)) {
+    const ga = enemy.isBoss ? 2 : 1;
+    G.gems+=ga; G.totalGems+=ga;
+    drops.push({type:'gem', amt:ga});
+  }
+  // Relic drop
+  if(rollPct(relicDropChance())) {
+    const tierMax = clamp(Math.floor(G.wave/5), 0, RELIC_DEFS.length-1);
+    const relic   = RELIC_DEFS[rand(0, tierMax)];
+    G.relicInventory[relic.id]=(G.relicInventory[relic.id]||0)+1;
+    drops.push({type:'relic', relic});
+  }
+  // Wave milestone bonus
+  if(G.wave%5===0 && !enemy.isBoss) {
+    const bonus=G.wave*G.level*7;
+    G.coins+=bonus; G.totalCoins+=bonus;
+    drops.push({type:'milestone', amt:bonus});
+  }
+  return drops;
+}
+
+function tryDiscoverRecipe(enemy) {
+  const tier='tier'+clamp(enemy.tier,0,3);
+  const dropFrom=enemy.isBoss?'boss':tier;
+  const eligible=ALL_RECIPES.filter(r=>!r.known && !G.discoveredRecipes.includes(r.id) && r.dropFrom===dropFrom);
+  eligible.forEach(r=>{
+    if(rollPct(r.dropChance)){
+      G.discoveredRecipes.push(r.id);
+      G.totalRecipesFound++;
+      showToast('📖 Recipe discovered: '+r.name+'!','recipe');
+      checkAchievements();
+    }
+  });
+}
+
+function checkForgeDrop() {
+  const dropWave=Math.floor(G.wave/FORGE_DROP_INTERVAL)*FORGE_DROP_INTERVAL;
+  if(dropWave>0 && dropWave!==G.lastForgeDropWave) {
+    G.lastForgeDropWave=dropWave;
+    const nonLocked=UPGRADES.map((u,i)=>i).filter(i=>isUpgUnlocked(i));
+    if(nonLocked.length){
+      const pick=nonLocked[rand(0,nonLocked.length-1)];
+      G.upgrades[pick]++;
+      const banner=document.getElementById('forge-drop-notif');
+      if(banner){
+        banner.innerHTML='<div class="forge-drop-banner">🎁 Wave '+G.wave+' reward: '+UPGRADES[pick].name+' leveled up free!</div>';
+        setTimeout(()=>{if(banner)banner.innerHTML='';},9000);
+      }
+      showToast('⚒️ Forge drop: '+UPGRADES[pick].name+' +1!','drop');
+    }
+  }
+}
+
+function combatTick() {
+  // Combat fully locked until Prestige 1
+  if(G.prestigeCount < 1) return;
+
+  // Handle cooldown after death
+  if(G.heroCooldown) {
+    const now=Date.now();
+    if(now >= G.heroCooldownEndsAt) {
+      G.heroCooldown=false; G.heroCooldownEndsAt=null;
+      G.hero.hp=G.hero.maxhp;
+      G.wave=1; spawnEnemy();
+      addLog('💚 Fully recovered! Ready to fight again.','le');
+      showToast('⚔️ Hero recovered! Wave reset to 1.','info');
+    }
+    if(document.getElementById('panel-combat').classList.contains('on')) renderCombat();
+    return;
+  }
+
+  if(!G.enemy) spawnEnemy();
+  const now=Date.now();
+  const hs=heroStats();
+  const shielded=(G.activeEffects.shield&&now<G.activeEffects.shield.exp)||(G.activeEffects.invuln&&now<G.activeEffects.invuln.exp);
+  // Regen
+  if(G.heroPassive.regen && G.hero.hp<G.hero.maxhp)
+    G.hero.hp=Math.min(G.hero.maxhp, G.hero.hp+G.heroPassive.regen);
+  // Hero attacks
+  const isCrit=rollPct(hs.crit);
+  const dmgE=Math.max(1, Math.floor((hs.atk - G.enemy.def)*(isCrit?hs.critMult:1)));
+  G.enemyHP=Math.max(0, G.enemyHP-dmgE);
+  addLog((isCrit?'⚡ CRIT! ':'')+'Hit '+G.enemy.name+' for '+dmgE, isCrit?'lb':'lg');
+  // Enemy retaliates
+  if(G.enemyHP>0){
+    if(shielded){ addLog('🛡️ Shield blocked!','le'); }
+    else {
+      const dmgH=Math.max(1, Math.floor(G.enemy.atk - hs.def));
+      G.hero.hp=Math.max(0, G.hero.hp-dmgH);
+      addLog(G.enemy.name+' hits for '+dmgH,'lr');
+    }
+  }
+  // Enemy dead
+  if(G.enemyHP<=0){
+    G.totalKills++; G.questProg.kills++;
+    if(G.heroPassive.vampiric) G.hero.hp=Math.min(G.hero.maxhp, G.hero.hp+G.heroPassive.vampiric);
+    const drops=rollCombatDrops(G.enemy);
+    drops.forEach(d=>{
+      if(d.type==='coin')     addLog('+'+fmt(d.amt)+' coins','lg');
+      if(d.type==='shard')    addLog('💀 +'+d.amt+' Soul Shards','lr');
+      if(d.type==='gem')      addLog('💎 +'+d.amt+' gem!','lb');
+      if(d.type==='relic')    addLog('📦 '+d.relic.name+' dropped!','lp');
+      if(d.type==='milestone')addLog('⭐ Wave bonus: +'+fmt(d.amt),'la');
+    });
+    if(G.enemy.isBoss){
+      G.bossKills++; G.gems+=2; G.totalGems+=2;
+      addLog('🏆 BOSS SLAIN! +2 Gems','le');
+      showToast('🐲 Boss defeated! +2 Gems!','gem');
+    }
+    tryDiscoverRecipe(G.enemy);
+    gainXP(12 + G.wave*2);
+    G.wave++; G.questProg.wave=G.wave;
+    checkForgeDrop();
+    spawnEnemy(); updateQuests(); checkAchievements(); renderAll();
+    if(document.getElementById('panel-combat').classList.contains('on')) renderCombat();
+    return;
+  }
+  // Hero dead
+  if(G.hero.hp<=0){
+    const setback = rand(2,5);
+    const newWave = Math.max(1, G.wave - setback);
+    addLog('💀 Defeated! Wave -'+setback+'...','lr');
+    const recoverySecs = Math.floor(30 + G.hero.maxhp * 0.5);
+    G.heroCooldown=true; G.heroCooldownEndsAt=Date.now()+recoverySecs*1000;
+    G.hero.hp=0; G.wave=newWave;
+    showToast('💀 Defeated! -'+setback+' waves. Recovery: '+fmtTime(recoverySecs),'bad');
+    if(document.getElementById('panel-combat').classList.contains('on')) renderCombat();
+    renderAll(); return;
+  }
+  if(document.getElementById('panel-combat').classList.contains('on')) renderCombat();
+  renderAll(); updateQuests();
+}
+
+function buyHeroGear(i){
+  const u=HERO_GEAR[i];
+  if(G.soulShards<u.shardCost || G.heroGear[i]) return;
+  G.soulShards-=u.shardCost;
+  G.heroGear[i]=true;
+  if(u.stat==='maxhp'){G.hero.maxhp+=u.amt; G.hero.hp=Math.min(G.hero.hp+u.amt,G.hero.maxhp);}
+  else if(u.stat==='crit') G.hero.crit=clamp(G.hero.crit+u.amt,0,75);
+  else G.hero[u.stat]+=u.amt;
+  showToast('⚔️ '+u.name+' equipped!');
+  renderAll(); renderCombat();
+}
+
+function buyHeroSkill(id){
+  const sk=HERO_SKILLS.find(s=>s.skill===id);
+  if(!sk || G.heroSkills[id] || G.soulShards<sk.shardCost) return;
+  G.soulShards-=sk.shardCost; G.heroSkills[id]=true;
+  G.heroPassive[id]=(G.heroPassive[id]||0)+sk.val;
+  showToast('🌟 '+sk.name+' learned!');
+  renderAll(); renderCombat();
+}
+
+/* ═══════════════════════════════════════
+   EXPEDITIONS
+   ═══════════════════════════════════════ */
+function rollExpeditionRewards(expDef) {
+  const out=[];
+  expDef.rewardPool.forEach(r=>{
+    if(r.type==='coins') out.push({type:'coins', amt:rand(r.min,r.max)});
+    if(r.type==='xp')    out.push({type:'xp',    amt:rand(r.min,r.max)});
+    if(r.type==='gems')  out.push({type:'gems',   amt:rand(r.min,r.max)});
+    if(r.type==='relic' && rollPct(r.chance)) {
+      const id=r.ids[rand(0,r.ids.length-1)];
+      out.push({type:'relic', id, ico:RELIC_DEFS.find(d=>d.id===id).ico});
+    }
+  });
+  if(rollPct(expDef.gemChance)) {
+    const bonus=rand(1,3);
+    out.push({type:'gems', amt:bonus, bonus:true});
+  }
+  return out;
+}
+
+function startExp(i){
+  const e=G.expeditions[i];
+  if(e.active || G.wave<e.minWave || G.coins<e.coinCost) return;
+  G.coins-=e.coinCost;
+  e.active=true; e.endsAt=Date.now()+e.dur*1000; e.done=false; e.pendingRewards=null;
+  showToast('🗺️ '+e.name+' begun!','info');
+  if(document.getElementById('panel-expeditions').classList.contains('on')) renderExpeditions();
+}
+
+function claimExp(i){
+  const e=G.expeditions[i];
+  if(!e.done) return;
+  const rewards=e.pendingRewards||[];
+  rewards.forEach(r=>{
+    if(r.type==='coins'){G.coins+=r.amt; G.totalCoins+=r.amt; G.questProg.earn+=r.amt;}
+    else if(r.type==='xp')    gainXP(r.amt);
+    else if(r.type==='gems'){G.gems+=r.amt; G.totalGems+=r.amt; showToast('💎 +'+r.amt+' Gems!','gem');}
+    else if(r.type==='relic') G.relicInventory[r.id]=(G.relicInventory[r.id]||0)+1;
+  });
+  G.totalExp++; G.questProg.expdone++;
+  e.active=false; e.done=false; e.endsAt=null; e.pendingRewards=null;
+  showToast('✅ '+e.name+' complete!','gem');
+  updateQuests(); checkAchievements(); renderAll();
+  if(document.getElementById('panel-expeditions').classList.contains('on')) renderExpeditions();
+}
+
+/* ═══════════════════════════════════════
+   ALCHEMY
+   ═══════════════════════════════════════ */
+function addToSlot(id){
+  const idx=G.slots.indexOf(null);
+  if(idx===-1){showToast('Cauldron full!','bad');return;}
+  if(!(G.relicInventory[id]>=1)){showToast('Not enough '+id+'!','bad');return;}
+  G.relicInventory[id]--; G.slots[idx]=id; renderAlchemy();
+}
+function clearSlot(i){
+  if(G.slots[i]){
+    G.relicInventory[G.slots[i]]=(G.relicInventory[G.slots[i]]||0)+1;
+    G.slots[i]=null; renderAlchemy();
+  }
+}
+function brew(){
+  const filled=G.slots.filter(Boolean);
+  if(filled.length<2){showToast('Need 2+ relics!','bad');return;}
+  const sf=[...filled].sort().join();
+
+  // Check if combo matches ANY recipe (known or unknown)
+  const anyMatch=ALL_RECIPES.find(r=>r.ing.length===filled.length && [...r.ing].sort().join()===sf);
+
+  if(anyMatch){
+    // Discover if unknown
+    if(!G.discoveredRecipes.includes(anyMatch.id)){
+      G.discoveredRecipes.push(anyMatch.id);
+      G.totalRecipesFound++;
+      showToast('📖 Recipe discovered: '+anyMatch.name+'!','recipe');
+      checkAchievements();
+    }
+    // Brew it
+    G.slots=[null,null,null]; G.potions.push({...anyMatch});
+    G.totalBrewed++; G.questProg.brewed++;
+    showToast('⚗️ Brewed: '+anyMatch.name+'!','info');
+    updateQuests(); checkAchievements(); renderAll(); renderAlchemy();
+  } else {
+    // Wrong combo — 15% chance each relic breaks permanently
+    let broken=0;
+    const returned=[];
+    G.slots.forEach(id=>{
+      if(!id) return;
+      if(rollPct(15)){
+        broken++;
+        showToast('💥 '+RELIC_DEFS.find(d=>d.id===id)?.name+' crumbled!','bad');
+      } else {
+        returned.push(id);
+      }
+    });
+    returned.forEach(id=>G.relicInventory[id]=(G.relicInventory[id]||0)+1);
+    G.slots=[null,null,null];
+    if(broken>0){
+      showToast('❌ Unknown combo! '+broken+' relic(s) destroyed.','bad');
+    } else {
+      showToast('❌ No recipe matches this combination.','bad');
+    }
+    renderAlchemy();
+  }
+}
+function usePotion(i){
+  const p=G.potions[i]; if(!p) return;
+  G.potions.splice(i,1);
+  G.activeEffects[p.effect]={exp:Date.now()+p.dur*1000,val:p.val};
+  showToast('🧪 '+p.name+' active!','info');
+  renderAlchemy(); renderAll();
+}
+
+/* ═══════════════════════════════════════
+   GEM SHOP
+   ═══════════════════════════════════════ */
+function buyRelicFromShop(id){
+  const r=RELIC_DEFS.find(x=>x.id===id);
+  if(G.gems<r.gemCost){showToast('Need '+r.gemCost+' gems!','bad');return;}
+  G.gems-=r.gemCost; G.relicInventory[id]=(G.relicInventory[id]||0)+1; G.relicsBought++;
+  showToast('Bought '+r.name+'! Check Alchemy.','gem');
+  checkAchievements(); renderAll(); renderShop();
+}
+function purchaseGemPack(i){
+  const p=GEM_PACKS[i]; const total=p.gems+p.bonus;
+  G.gems+=total; G.totalGems+=total;
+  showToast('💎 +'+total+' Gems! Thank you!','donate');
+  renderAll(); renderShop(); checkAchievements();
+}
+function purchaseAdFree(){
+  if(G.adFree){showToast('Already ad-free!');return;}
+  G.adFree=true;
+  showToast('🎉 Ads removed! Thank you!','donate');
+  document.getElementById('ad-badge').textContent='AD FREE';
+  document.getElementById('ad-badge').classList.add('ad-free-badge');
+  renderAll(); renderShop();
+}
+
+/* ═══════════════════════════════════════
+   DAILY QUESTS
+   ═══════════════════════════════════════ */
+function generateQuests(){
+  const pool=[...QUEST_POOL].sort(()=>Math.random()-.5).slice(0,3);
+  G.quests=pool.map(q=>{
+    const target=q.targets[rand(0,q.targets.length-1)];
+    return{...q,target,current:0,claimed:false,
+      desc:q.desc.replace('{n}',target),
+      rwdType:q.rwd.split(':')[0],rwdAmt:parseInt(q.rwd.split(':')[1])};
+  });
+  G.questProg={clicks:0,earn:0,kills:0,expdone:0,brewed:0,wave:G.wave};
+  G.questsRefreshAt=Date.now()+24*3600*1000;
+  G.allQuestsBonusClaimed=false;
+}
+function updateQuests(){
+  if(!G.quests.length || Date.now()>G.questsRefreshAt) generateQuests();
+  G.quests.forEach(q=>{
+    if(!q.claimed) q.current=Math.min(q.target, q.type==='wave'?G.wave:(G.questProg[q.type]||0));
+  });
+  if(document.getElementById('panel-daily').classList.contains('on')) renderDaily();
+}
+function claimQuest(i){
+  const q=G.quests[i]; if(q.claimed||q.current<q.target) return;
+  q.claimed=true;
+  if(q.rwdType==='coins'){G.coins+=q.rwdAmt;G.totalCoins+=q.rwdAmt;}
+  else if(q.rwdType==='xp') gainXP(q.rwdAmt);
+  else if(q.rwdType==='gems'){G.gems+=q.rwdAmt;G.totalGems+=q.rwdAmt;}
+  showToast('🎲 Quest done! +'+q.rwdAmt+' '+q.rwdType,'gem');
+  checkAchievements(); renderAll(); renderDaily();
+}
+function claimAllBonus(){
+  if(G.allQuestsBonusClaimed||!G.quests.every(q=>q.claimed)) return;
+  G.allQuestsBonusClaimed=true; G.allQuestsDone++;
+  G.gems+=ALL_QUESTS_GEM_BONUS; G.totalGems+=ALL_QUESTS_GEM_BONUS;
+  showToast('💎 +'+ALL_QUESTS_GEM_BONUS+' Bonus Gems!','gem');
+  checkAchievements(); renderAll(); renderDaily();
+}
+
+/* ═══════════════════════════════════════
+   PRESTIGE
+   ═══════════════════════════════════════ */
+function checkPrestigeReady(){
+  const req=prestigeReqLevel(G.prestigeCount);
+  const btn=document.getElementById('pr-btn');
+  const reqEl=document.getElementById('pr-req');
+  if(!btn) return;
+  const ready=G.level>=req;
+  btn.disabled=!ready;
+  reqEl.textContent = ready ? 'Ready! Forge upgrades reset. Everything else persists.' : 'Reach Level '+req+' (currently '+G.level+')';
+  // Unlocks info
+  const ul=document.getElementById('pr-unlocks');
+  if(ul){
+    const next=G.prestigeCount+1;
+    const lines=[
+      '✅ Forge upgrades reset, all progress kept',
+      next===1?'🔓 Prestige 1 → Unlocks Combat tab':'',
+      next===2?'🔓 Prestige 2 → Unlocks Expeditions tab':'',
+      next===3?'🔓 Prestige 3 → Unlocks Alchemy tab':'',
+    ].filter(Boolean);
+    ul.innerHTML=lines.join('<br>');
+  }
+  // Bonus text
+  const btxt=document.getElementById('pr-bonus-text');
+  if(btxt) btxt.textContent=
+    'Prestiges: '+G.prestigeCount+
+    ' · XP bonus: +'+(G.prestigeCount*15)+'%'+
+    ' · Income mult: ×'+(1+G.prestigeCount*0.25).toFixed(2)+
+    ' · Click bonus: +'+(G.prestigeCount*5)+' flat coins'+
+    ' · Next Ascend at Level '+prestigeReqLevel(G.prestigeCount);
+}
+
+function doPrestige(){
+  const req=prestigeReqLevel(G.prestigeCount);
+  if(G.level<req) return;
+  const prevCount = G.prestigeCount;
+  G.prestigeCount++;
+  // Prestige mult affects coin income
+  G.prestigeMult=1+G.prestigeCount*0.25;
+  // Reset only upgrades
+  G.upgrades=Array(UPGRADES.length).fill(0);
+  G.coins=0; G.totalCoins=0; G.clicks=0; G.level=1; G.xp=0;
+  showToast('✨ Ascended to Prestige '+G.prestigeCount+'! +'+G.prestigeCount*25+'% coins, +'+G.prestigeCount*15+'% XP!','prestige');
+  updateTabLocks();
+  checkPrestigeReady();
+  renderAll();
+  checkAchievements();
+  // Trigger tutorial for newly unlocked tabs
+  if(prevCount===0) setTimeout(()=>{ switchTabWithTutorial('combat'); },800);
+  if(prevCount===1) setTimeout(()=>{ switchTabWithTutorial('expeditions'); },800);
+  if(prevCount===2) setTimeout(()=>{ switchTabWithTutorial('alchemy'); },800);
+}
+
+/* ═══════════════════════════════════════
+   TAB LOCKING
+   ═══════════════════════════════════════ */
+function updateTabLocks(){
+  const locks={
+    combat:      G.prestigeCount>=1,
+    expeditions: G.prestigeCount>=2,
+    alchemy:     G.prestigeCount>=3,
+  };
+  ['combat','expeditions','alchemy'].forEach(id=>{
+    const tab=document.getElementById('tab-'+id);
+    if(!tab) return;
+    if(locks[id]){
+      tab.style.display='';
+      tab.classList.remove('locked-tab');
+    } else {
+      tab.style.display='none'; // Completely hidden until unlocked
+    }
+  });
+}
+
+function isTabLocked(id){
+  const locks={combat:1, expeditions:2, alchemy:3};
+  return locks[id]!==undefined && G.prestigeCount < locks[id];
+}
+
+/* ═══════════════════════════════════════
+   ACHIEVEMENTS
+   ═══════════════════════════════════════ */
+function checkAchievements(){
+  ACHS.forEach((a,i)=>{
+    if(!G.achievements[i] && a.chk()){
+      G.achievements[i]=true;
+      showToast('🏆 Achievement: '+a.name);
+      if(document.getElementById('panel-trophies').classList.contains('on')) renderTrophies();
+    }
+  });
+}
+
+/* ═══════════════════════════════════════
+   DEV MODE
+   ═══════════════════════════════════════ */
+let logoTapTimer;
+document.getElementById('logo-tap').addEventListener('click',()=>{
+  G.devTaps++;
+  clearTimeout(logoTapTimer);
+  if(G.devTaps>=7){
+    G.devTaps=0; G.devMode=!G.devMode;
+    if(G.devMode){
+      showToast('🛠️ Dev Mode ON','dev');
+      // Add dev tab if not present
+      if(!document.getElementById('tab-dev')){
+        const tabs=document.getElementById('tab-bar');
+        const t=document.createElement('div');
+        t.className='tab'; t.id='tab-dev';
+        t.innerHTML='<span class="ti">🛠️</span>Dev';
+        tabs.appendChild(t);
+        t.addEventListener('click',()=>switchTab('dev'));
+      }
+    } else {
+      showToast('🛠️ Dev Mode OFF','bad');
+      const tab=document.getElementById('tab-dev');
+      if(tab) tab.remove();
+    }
+  } else {
+    logoTapTimer=setTimeout(()=>{G.devTaps=0;},1500);
+  }
+});
+
+/* ═══════════════════════════════════════
+   TICKS
+   ═══════════════════════════════════════ */
+setInterval(()=>{
+  const {cps}=getStats();
+  if(cps>0){
+    G.coins+=cps; G.totalCoins+=cps; G.questProg.earn+=cps;
+    // Passive XP per second scales with prestige
+    gainXP(Math.floor(0.5 + G.prestigeCount*0.5));
+    renderAll();
+  }
+},1000);
+
+setInterval(combatTick, 2500);
+
+setInterval(()=>{
+  if(G.hero.hp<G.hero.maxhp) G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+1);
+},6000);
+
+setInterval(()=>{
+  const now=Date.now(); let ch=false;
+  G.expeditions.forEach(e=>{
+    if(e.active && !e.done && e.endsAt && now>=e.endsAt){
+      e.done=true; ch=true;
+      e.pendingRewards=rollExpeditionRewards(e);
+      showToast('🗺️ '+e.name+' returned! Claim rewards.','gem');
+    }
+  });
+  if(ch && document.getElementById('panel-expeditions').classList.contains('on')) renderExpeditions();
+},5000);
+setInterval(()=>{ if(document.getElementById('panel-expeditions').classList.contains('on')) renderExpeditions(); },3000);
+
+setInterval(()=>{
+  const now=Date.now();
+  Object.keys(G.activeEffects).forEach(k=>{if(G.activeEffects[k].exp<now) delete G.activeEffects[k];});
+},1000);
+
+/* ═══════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════ */
+const BASE_TABS=['upgrades','combat','expeditions','alchemy','shop','daily','prestige'];
+function switchTab(name){
+  if(isTabLocked(name)){
+    showToast('🔒 Unlocks at Prestige '+(name==='combat'?1:name==='expeditions'?2:3)+'!','bad');
+    return;
+  }
+  const allTabs=[...BASE_TABS,'dev','trophies'];
+  allTabs.forEach(t=>{
+    const tab=document.getElementById('tab-'+t);
+    const panel=document.getElementById('panel-'+t);
+    if(tab)   tab.classList.toggle('on',   t===name);
+    if(panel) panel.classList.toggle('on', t===name);
+  });
+  if(name==='combat')      renderCombat();
+  if(name==='expeditions') renderExpeditions();
+  if(name==='alchemy')     renderAlchemy();
+  if(name==='shop')        renderShop();
+  if(name==='daily')       {updateQuests(); renderDaily();}
+  if(name==='dev')         renderDev();
+}
+// Tab listeners bound after tutorial setup below
+
+/* ═══════════════════════════════════════
+   RENDER ALL
+   ═══════════════════════════════════════ */
+function renderAll(){
+  const {cpc,cps}=getStats();
+  document.getElementById('h-coins').textContent=fmt(G.coins);
+  document.getElementById('h-gems').textContent=G.gems;
+  document.getElementById('s-cpc').textContent=fmt(cpc);
+  document.getElementById('s-cps').textContent=fmt(cps);
+  document.getElementById('s-wave').textContent=G.wave;
+  const need=xpFor(G.level);
+  document.getElementById('lv-label').textContent='Level '+G.level+(G.prestigeCount?' ✨'+G.prestigeCount:'');
+  document.getElementById('lv-xp').textContent=G.xp+' / '+need+' XP';
+  document.getElementById('prog-fill').style.width=(G.xp/need*100)+'%';
+  document.getElementById('cps-lbl').textContent='+'+fmt(cps)+' coins/sec';
+  checkPrestigeReady();
+  renderUpgrades();
+}
+
+/* ── FORGE ── */
+function renderUpgrades(){
+  const list=document.getElementById('upg-list');
+  const nextForge=FORGE_DROP_INTERVAL-(((G.wave-1))%FORGE_DROP_INTERVAL);
+  const qtyLabels=[['1','1'],['10','10'],['100','100'],['Max','max']];
+  const qtyVals=[1,10,100,-1];
+  let html='<div class="sec">Forge — free upgrade every '+FORGE_DROP_INTERVAL+' waves · next in '+nextForge+' waves</div>'
+    +'<div class="buy-qty-row"><span class="buy-qty-lbl">BUY:</span>'
+    +qtyLabels.map(([lbl],qi)=>`<div class="qty-btn${G.forgeBuyQty===qtyVals[qi]?' active':''}" data-qty="${qtyVals[qi]}">${lbl}×</div>`).join('')
+    +'</div>';
+  UPGRADES.forEach((u,i)=>{
+    const lv=G.upgrades[i];
+    const unlocked=isUpgUnlocked(u.unlockReq?u.unlockReq:null,i);
+    const cost=upgCost(i);
+    const can=unlocked && G.coins>=cost;
+    if(!unlocked){
+      const req=u.unlockReq;
+      html+=`<div class="upg locked-upg">
+        <div class="upg-ico">${u.ico}</div>
+        <div class="upg-body">
+          <div class="upg-name">${u.name}</div>
+          <div class="upg-desc">${u.desc}</div>
+          <div class="upg-unlock">🔒 Requires "${UPGRADES[req.idx].name}" level ${req.lv}</div>
+        </div>
+        <div class="upg-cost"><div class="upg-cv" style="color:var(--muted)">Locked</div></div>
+      </div>`;
+    } else {
+      const showQty = G.forgeBuyQty===-1 ? maxAffordable(i) : G.forgeBuyQty;
+      const totalCost = showQty > 0 ? upgCostN(i, showQty) : upgCost(i);
+      const canBuy = unlocked && G.coins >= upgCost(i);
+      const canAffordAll = unlocked && G.coins >= totalCost;
+      html+=`<div class="upg${canBuy?' can':''}" data-upg="${i}">
+        <div class="upg-ico">${u.ico}</div>
+        <div class="upg-body">
+          <div class="upg-name">${u.name}</div>
+          <div class="upg-desc">${u.desc}</div>
+        </div>
+        <div class="upg-cost">
+          <div class="upg-cv" style="${canAffordAll?'':'color:var(--muted)'}">${fmt(totalCost)}</div>
+          <div class="upg-cl">${showQty>1?'×'+showQty+' ':''}coins</div>
+        </div>
+        <div class="upg-lv">Lv ${lv}</div>
+      </div>`;
+    }
+  });
+  list.innerHTML=html;
+  list.querySelectorAll('[data-qty]').forEach(el=>el.addEventListener('click',()=>{
+    G.forgeBuyQty=parseInt(el.dataset.qty)||el.dataset.qty;
+    if(el.dataset.qty==='max'||el.dataset.qty==='-1') G.forgeBuyQty=-1;
+    renderUpgrades();
+  }));
+  list.querySelectorAll('[data-upg]').forEach(el=>el.addEventListener('click',()=>buyUpg(parseInt(el.dataset.upg))));
+}
+// Helper to check unlock by passing (req, idx)
+function isUpgUnlocked(req, idx){
+  if(idx!==undefined) { // called from renderUpgrades
+    const r=UPGRADES[idx].unlockReq;
+    if(!r) return true;
+    return G.upgrades[r.idx]>=r.lv;
+  }
+  if(!req) return true;
+  return G.upgrades[req.idx]>=req.lv;
+}
+
+/* ── COMBAT ── */
+function renderCombat(){
+  if(isTabLocked('combat')){ renderLocked('panel-combat','⚔️','Combat','Unlocks after your first Ascension (Prestige 1).','Prestige 1'); return; }
+  if(!G.enemy) spawnEnemy();
+  const panel=document.getElementById('panel-combat');
+  const hs=heroStats();
+  const heroHpPct=clamp(G.hero.hp/G.hero.maxhp*100,0,100);
+  const enemyHpPct=clamp(G.enemyHP/G.enemy.hp*100,0,100);
+  const now=Date.now();
+
+  // Show cooldown screen if recovering
+  if(G.heroCooldown && G.heroCooldownEndsAt) {
+    const remSec=Math.max(0,Math.ceil((G.heroCooldownEndsAt-now)/1000));
+    const pct=clamp(1-remSec/(180*G.hero.maxhp/100),0,1)*100;
+    panel.innerHTML=
+      '<div class="sec">Combat — Recovery</div>'+
+      '<div class="combat-arena" style="text-align:center;padding:22px 14px">'+
+        '<div style="font-size:3rem;margin-bottom:10px">💀</div>'+
+        '<div style="font-family:var(--font-h);font-size:.85rem;color:var(--ruby);margin-bottom:6px">Hero Defeated</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Recovering... all battles suspended</div>'+
+        '<div style="font-family:var(--font-h);font-size:1.4rem;color:var(--gold);margin-bottom:10px">'+fmtTime(remSec)+'</div>'+
+        '<div style="background:var(--border);border-radius:10px;height:6px;overflow:hidden">'+
+          '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#9e1a1a,var(--emerald));border-radius:10px;transition:width 1s linear"></div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:8px">Wave will reset to 1 on recovery</div>'+
+      '</div>'+
+      '<div class="combat-log">'+G.combatLog.map(l=>'<span class="'+l.cls+'">'+l.msg+'</span><br>').join('')+'</div>';
+    return;
+  }
+
+  const efxHtml=Object.entries(G.activeEffects).filter(([,v])=>v.exp>now)
+    .map(([k,v])=>`<span style="font-size:9px;background:rgba(160,75,232,.1);border:1px solid rgba(160,75,232,.2);color:var(--amethyst);border-radius:4px;padding:1px 5px">${k} ${Math.ceil((v.exp-now)/1000)}s</span>`).join('');
+
+  panel.innerHTML=
+    '<div class="sec">Combat — auto-battle every 2.5s</div>'
+    +(efxHtml?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:7px">${efxHtml}</div>`:'')
+    +'<div class="combat-arena">'
+      +'<div class="wave-badge">'+(G.wave%10===0?'👑 BOSS · ':'')+'Wave '+G.wave+'</div>'
+      +'<div class="fighters">'
+        +'<div class="fighter"><span class="fighter-ico">🧙</span><span class="fighter-name">Your Hero</span>'
+          +'<div class="hp-bar"><div class="hp-fill hero-hp" style="width:'+heroHpPct+'%"></div></div>'
+          +'<div class="hp-txt">'+G.hero.hp+'/'+G.hero.maxhp+'</div></div>'
+        +'<div class="vs-ico">VS</div>'
+        +'<div class="fighter"><span class="fighter-ico">'+G.enemy.ico+'</span><span class="fighter-name">'+G.enemy.name+'</span>'
+          +'<div class="hp-bar"><div class="hp-fill enemy-hp" style="width:'+enemyHpPct+'%"></div></div>'
+          +'<div class="hp-txt">'+Math.max(0,Math.floor(G.enemyHP))+'/'+G.enemy.hp+'</div></div>'
+      +'</div>'
+      +'<div class="combat-log">'+G.combatLog.map(l=>'<span class="'+l.cls+'">'+l.msg+'</span><br>').join('')+'</div>'
+    +'</div>'
+    +'<div class="hero-stats-row">'
+      +'<div class="hstat"><div class="sv">'+hs.atk+'</div><div class="sl">ATK</div></div>'
+      +'<div class="hstat"><div class="sv">'+hs.def+'</div><div class="sl">DEF</div></div>'
+      +'<div class="hstat"><div class="sv">'+hs.crit+'%</div><div class="sl">CRIT</div></div>'
+      +'<div class="hstat"><div class="sv">'+G.totalKills+'</div><div class="sl">Kills</div></div>'
+    +'</div>'
+    +'<div class="drop-chances">'
+      +'<span class="drop-chip" style="border-color:rgba(75,157,232,.3);color:var(--sapphire);background:rgba(75,157,232,.06)">💎 '+gemDropChance().toFixed(1)+'%</span>'
+      +'<span class="drop-chip" style="border-color:rgba(160,75,232,.3);color:var(--amethyst);background:rgba(160,75,232,.06)">📦 '+relicDropChance().toFixed(1)+'%</span>'
+      +'<span class="drop-chip" style="border-color:rgba(232,184,75,.22);color:var(--gold);background:rgba(232,184,75,.05)">⚒️ Forge drop /'+FORGE_DROP_INTERVAL+'w</span>'
+    +'</div>'
+    +'<div class="shard-display"><div class="shard-ico">💀</div><div><div class="shard-val">'+G.soulShards+'</div><div class="shard-lbl">Soul Shards — Combat Currency</div></div></div>'
+    +'<div class="sec" style="margin-top:4px">⚔️ Equipment — buy with Soul Shards</div>'
+    +'<div class="hu-list">'
+    +HERO_GEAR.map((u,i)=>{
+      const b=G.heroGear[i],c=G.soulShards>=u.shardCost&&!b;
+      return`<div class="hu${c?'':' cant'}" data-gear="${i}">
+        <div class="hu-ico">${u.ico}</div>
+        <div class="hu-body"><div class="hu-name">${u.name}</div><div class="hu-desc">${u.desc}</div></div>
+        <div class="hu-cost" style="color:var(--ruby)">${b?'<span style="color:var(--emerald)">✓</span>':u.shardCost+'💀'}</div>
+      </div>`;
+    }).join('')+'</div>'
+    +'<div class="sec" style="margin-top:11px">🌟 Passive Skills — buy with Soul Shards</div>'
+    +'<div class="hu-list">'
+    +HERO_SKILLS.map(sk=>{
+      const b=G.heroSkills[sk.skill],c=G.soulShards>=sk.shardCost&&!b;
+      return`<div class="hu passive-skill${c?'':' cant'}" data-skill="${sk.skill}">
+        <div class="hu-ico">${sk.ico}</div>
+        <div class="hu-body"><div class="hu-name">${sk.name}</div><div class="hu-desc">${sk.desc}</div></div>
+        <div class="hu-cost" style="color:var(--ruby)">${b?'<span style="color:var(--emerald)">✓</span>':sk.shardCost+'💀'}</div>
+      </div>`;
+    }).join('')+'</div>';
+
+  panel.querySelectorAll('[data-gear]').forEach(el=>el.addEventListener('click',()=>buyHeroGear(parseInt(el.dataset.gear))));
+  panel.querySelectorAll('[data-skill]').forEach(el=>el.addEventListener('click',()=>buyHeroSkill(el.dataset.skill)));
+}
+
+/* ── EXPEDITIONS ── */
+function renderExpeditions(){
+  if(isTabLocked('expeditions')){ renderLocked('panel-expeditions','🗺️','Expeditions','Unlocks after your second Ascension (Prestige 2).','Prestige 2'); return; }
+  const panel=document.getElementById('panel-expeditions');
+  const now=Date.now();
+  let html='<div class="sec">Expeditions — Random rewards, always profitable</div><div class="exp-list">';
+  G.expeditions.forEach((e,i)=>{
+    const locked=G.wave<e.minWave;
+    const cantAfford=G.coins<e.coinCost;
+    const remaining=e.endsAt?Math.max(0,Math.ceil((e.endsAt-now)/1000)):e.dur;
+    const pct=e.active&&e.endsAt?clamp(1-(e.endsAt-now)/(e.dur*1000),0,1)*100:0;
+    // Show pending rewards if done
+    const rewardsHtml = e.done && e.pendingRewards
+      ? e.pendingRewards.map(r=>{
+          if(r.type==='coins')return`<span class="exp-tag reward">🪙 ${fmt(r.amt)}</span>`;
+          if(r.type==='xp')   return`<span class="exp-tag reward">⭐ ${r.amt} XP</span>`;
+          if(r.type==='gems') return`<span class="exp-tag gem">💎 ${r.amt}</span>`;
+          if(r.type==='relic')return`<span class="exp-tag reward">${r.ico} relic</span>`;
+        }).join('')
+      : '';
+
+    html+=`<div class="exp${locked?' exp-locked':''}">
+      <div class="exp-top">
+        <div class="exp-ico">${locked?'🔒':e.ico}</div>
+        <div class="exp-info">
+          <div class="exp-name">${e.name}</div>
+          <div class="exp-desc">${e.desc}</div>
+          <div class="exp-tags">
+            <span class="exp-tag wave">⚔️ Wave ${e.minWave}+</span>
+            <span class="exp-tag cost">🪙 ${fmt(e.coinCost)}</span>
+            <span class="exp-tag">⏳ ${fmtTime(e.dur)}</span>
+            ${e.gemChance?`<span class="exp-tag gem">💎 ${e.gemChance}% gem</span>`:''}
+          </div>
+        </div>
+      </div>
+      ${e.done
+        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${rewardsHtml}</div>
+           <button class="exp-btn go" data-claim="${i}">🎁 Claim Rewards</button>`
+        : e.active
+          ? `<button class="exp-btn active-exp" disabled>⏳ ${fmtTime(remaining)}</button>
+             <div class="exp-tbar"><div class="exp-tfill" style="width:${pct}%"></div></div>`
+          : `<button class="exp-btn go" ${locked||cantAfford?'disabled':''} data-start="${i}">
+              ${cantAfford&&!locked?'🪙 Need '+fmt(e.coinCost):'→ Start'}
+             </button>`
+      }
+    </div>`;
+  });
+  html+='</div>';
+  panel.innerHTML=html;
+  panel.querySelectorAll('[data-start]').forEach(b=>b.addEventListener('click',()=>startExp(parseInt(b.dataset.start))));
+  panel.querySelectorAll('[data-claim]').forEach(b=>b.addEventListener('click',()=>claimExp(parseInt(b.dataset.claim))));
+}
+
+/* ── ALCHEMY ── */
+function renderAlchemy(){
+  if(isTabLocked('alchemy')){ renderLocked('panel-alchemy','⚗️','Alchemy','Unlocks after your third Ascension (Prestige 3).','Prestige 3'); return; }
+  const panel=document.getElementById('panel-alchemy');
+  const now=Date.now();
+  const invRelics=Object.entries(G.relicInventory).filter(([,q])=>q>0);
+  const hasComb=G.slots.filter(Boolean).length>=2;
+  const efxHtml=Object.entries(G.activeEffects).filter(([,v])=>v.exp>now)
+    .map(([k,v])=>`<span style="font-size:9px;background:rgba(160,75,232,.1);border:1px solid rgba(160,75,232,.2);color:var(--amethyst);border-radius:4px;padding:1px 5px">${k} ${Math.ceil((v.exp-now)/1000)}s</span>`).join('');
+
+  const knownCount=G.discoveredRecipes.length;
+  const totalRecipes=ALL_RECIPES.length;
+
+  let html='<div class="sec">Alchemy Lab</div>'
+    +(efxHtml?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px">${efxHtml}</div>`:'')
+    +'<div class="alch-intro">Combine relics to discover potions. ⚠️ Wrong combos: 15% chance each relic crumbles! Discovered recipes are saved.</div>'
+    +'<div class="cauldron"><span class="cauldron-ico">🪄</span>'
+      +'<div class="slots">'
+      +G.slots.map((s,i)=>{
+        const r=s?RELIC_DEFS.find(d=>d.id===s):null;
+        return`<div class="slot${s?' filled':''}" data-slot="${i}">`
+          +(r?`<div class="slot-ico">${r.ico}</div><div class="slot-name">${r.name.split(' ')[0]}</div>`:'<div class="slot-empty">+</div>')
+          +'</div>';
+      }).join('')+'</div>'
+      +'<button class="brew-btn" id="brew-btn" '+(hasComb?'':'disabled')+'>⚗️ Brew / Experiment</button>'
+    +'</div>'
+    +'<div class="inv-title">Relic Inventory</div>'
+    +(invRelics.length
+      ?'<div class="inv-grid">'+invRelics.map(([id,qty])=>{
+          const r=RELIC_DEFS.find(d=>d.id===id);
+          return`<div class="inv-item" data-inv="${id}"><span class="inv-ico">${r.ico}</span><div class="inv-name">${r.name.split(' ')[0]}</div><div class="inv-qty">×${qty}</div></div>`;
+        }).join('')+'</div>'
+      :'<div style="font-size:11px;color:var(--muted);margin-bottom:9px">No relics. Buy in 💎 Shop or earn from Expeditions & Combat.</div>')
+    +`<div class="sec" style="margin-top:11px">Recipes — ${knownCount}/${totalRecipes} discovered</div>`
+    +'<div class="recipe-grid">';
+
+  ALL_RECIPES.forEach(r=>{
+    const isKnown=G.discoveredRecipes.includes(r.id);
+    const attrRecipe=isKnown?`data-recipe="${r.id}"`:'';
+    const unlockAttr=!isKnown?`data-unlock-recipe="${r.id}"`:'';
+    html+=`<div class="recipe-card${isKnown?'':' unknown'}" ${attrRecipe}>
+      <div class="pot-ico">${isKnown?r.ico:'&#127787;'}</div>
+      <div class="pot-body">
+        <div class="pot-name">${isKnown?r.name:'??? Unknown Potion'}</div>
+        <div class="pot-desc">${isKnown?r.desc:'Experiment to discover this recipe'}</div>
+        ${isKnown?`<div class="pot-ing">${r.ing.map(id=>RELIC_DEFS.find(d=>d.id===id)?.ico||id).join(' + ')}</div>`:''}
+      </div>
+      ${isKnown
+        ?'<div class="pot-action">BREW</div>'
+        :`<div ${unlockAttr} style="cursor:pointer;background:rgba(75,157,232,.08);border:1px solid rgba(75,157,232,.22);border-radius:6px;padding:3px 7px;font-size:9px;color:var(--sapphire);font-family:var(--font-h)">💎 10</div>`
+      }
+    </div>`;
+  });
+  html+='</div>';
+
+  if(G.potions.length){
+    html+='<div class="sec" style="margin-top:11px">Your Potions ('+G.potions.length+')</div>'
+      +'<div class="potions-owned">'
+      +G.potions.map((p,i)=>`<div class="potion-item" data-pot="${i}">
+        <div class="pot-ico">${p.ico}</div>
+        <div class="pot-body"><div class="pot-name">${p.name}</div><div class="pot-desc">${p.desc} (${fmtTime(p.dur)})</div></div>
+        <div class="pot-action">USE</div>
+      </div>`).join('')+'</div>';
+  }
+
+  panel.innerHTML=html;
+  document.getElementById('brew-btn')?.addEventListener('click', brew);
+  panel.querySelectorAll('[data-slot]').forEach(el=>el.addEventListener('click',()=>clearSlot(parseInt(el.dataset.slot))));
+  panel.querySelectorAll('[data-inv]').forEach(el=>el.addEventListener('click',()=>addToSlot(el.dataset.inv)));
+  panel.querySelectorAll('[data-pot]').forEach(el=>el.addEventListener('click',()=>usePotion(parseInt(el.dataset.pot))));
+  panel.querySelectorAll('[data-unlock-recipe]').forEach(el=>el.addEventListener('click',()=>{
+    const id=el.dataset.unlockRecipe;
+    if(G.gems<10){showToast('Need 10 💎 to unlock a recipe!','bad');return;}
+    if(G.discoveredRecipes.includes(id)){showToast('Already known!','info');return;}
+    if(confirm('Spend 10 💎 to reveal this recipe?')){
+      G.gems-=10; G.discoveredRecipes.push(id); G.totalRecipesFound++;
+      const r=ALL_RECIPES.find(x=>x.id===id);
+      showToast('📖 Recipe unlocked: '+r.name+'!','recipe');
+      checkAchievements(); renderAll(); renderAlchemy();
+    }
+  }));
+  panel.querySelectorAll('[data-recipe]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const id=el.dataset.recipe;
+      const r=ALL_RECIPES.find(x=>x.id===id);
+      if(!r || !G.discoveredRecipes.includes(id)) return;
+      // Clear slots
+      G.slots.forEach((_,i)=>{if(G.slots[i]){G.relicInventory[G.slots[i]]=(G.relicInventory[G.slots[i]]||0)+1;G.slots[i]=null;}});
+      // Check stock
+      const needed={}; r.ing.forEach(id2=>needed[id2]=(needed[id2]||0)+1);
+      const ok=Object.entries(needed).every(([id2,cnt])=>(G.relicInventory[id2]||0)>=cnt);
+      if(!ok){showToast('Missing relics!','bad');renderAlchemy();return;}
+      r.ing.forEach(id2=>{const si=G.slots.indexOf(null);if(si!==-1){G.relicInventory[id2]--;G.slots[si]=id2;}});
+      renderAlchemy();
+    });
+  });
+}
+
+/* ── GEM SHOP ── */
+function renderShop(){
+  const panel=document.getElementById('panel-shop');
+  let html='<div class="sec">Gem Shop</div>'
+    +'<div class="gem-balance-card"><div class="gem-balance-ico">💎</div>'
+      +'<div><div style="font-size:11px;color:var(--muted)">Your Gems</div><div class="gem-balance-val">'+G.gems+'</div></div></div>'
+    +'<div class="gem-earn-info"><strong>Free Gem Sources:</strong><br>'
+      +'⚔️ <strong>Boss kill</strong> — +2 gems every 10 waves<br>'
+      +'🎲 <strong>Combat drops</strong> — '+gemDropChance().toFixed(1)+'% per kill (scales with level)<br>'
+      +'🗺️ <strong>Expeditions</strong> — guaranteed gems on harder missions<br>'
+      +'🎲 <strong>All daily quests</strong> — +'+ALL_QUESTS_GEM_BONUS+' bonus gems'
+    +'</div>'
+    +'<div class="sec">Relic Store — Spend Gems</div>'
+    +'<div class="relic-store-grid">'
+    +RELIC_DEFS.map(r=>`<div class="rstore-item${G.gems<r.gemCost?' cant-afford':''}" data-rstore="${r.id}">
+      <span class="rstore-ico">${r.ico}</span>
+      <div class="rstore-name">${r.name}</div>
+      <div class="rstore-flavor">${r.flavor}</div>
+      <div class="rstore-price">💎 ${r.gemCost}</div>
+    </div>`).join('')+'</div>'
+    +'<div class="sec" style="margin-top:14px">Remove Ads</div>'
+    +(G.adFree
+      ?'<div class="ad-remove-card owned"><div class="ad-remove-ico">✅</div><div class="ad-remove-info"><div class="ad-remove-title">Ad-Free Active</div><div class="ad-remove-desc">Thank you for supporting! ❤️</div></div><div class="ad-remove-price">Owned</div></div>'
+      :'<div class="ad-remove-card" id="adfree-real"><div class="ad-remove-ico">❤️</div><div class="ad-remove-info"><div class="ad-remove-title">Remove Ads Forever</div><div class="ad-remove-desc">One-time. Supports the developer on all platforms.</div></div><div class="ad-remove-price">$1.99</div></div>')
+    +(!G.adFree?'<div class="ad-slot">📢 AD PLACEHOLDER</div>':'')
+    +'<div class="sec" style="margin-top:14px">Gem Packs — Support Development</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">The full game is free. Packs help you progress faster and fund future updates. ❤️</div>'
+    +'<div class="donate-packs">'
+    +GEM_PACKS.map((p,i)=>`<div class="pack${p.featured?' featured':''}" data-pack="${i}">
+      <div class="pack-ico">${p.ico}</div>
+      <div class="pack-info">
+        <div class="pack-name">${p.name}${p.featured?'<span class="pack-badge">BEST VALUE</span>':''}</div>
+        <div class="pack-desc">${p.desc}</div>
+        ${p.bonus?`<div class="pack-bonus">+${p.bonus} bonus gems</div>`:''}
+      </div>
+      <div class="pack-price">${p.price}</div>
+    </div>`).join('')+'</div>';
+
+  panel.innerHTML=html;
+  panel.querySelectorAll('[data-rstore]').forEach(el=>el.addEventListener('click',()=>buyRelicFromShop(el.dataset.rstore)));
+  panel.querySelectorAll('[data-pack]').forEach(el=>el.addEventListener('click',()=>purchaseGemPack(parseInt(el.dataset.pack))));
+  document.getElementById('adfree-real')?.addEventListener('click',purchaseAdFree);
+}
+
+/* ── DAILY ── */
+function renderDaily(){
+  const panel=document.getElementById('panel-daily');
+  const refreshIn=Math.max(0,Math.ceil((G.questsRefreshAt-Date.now())/1000));
+  const allDone=G.quests.length && G.quests.every(q=>q.claimed);
+  let html='<div class="sec">Daily Quests</div>';
+  if(allDone && !G.allQuestsBonusClaimed){
+    html+=`<div class="all-done-banner"><div class="adb-title">🎉 All Quests Complete!</div>
+      <div class="adb-desc">Claim your bonus for finishing all three today.</div>
+      <button class="claim-all-btn" id="claim-all-btn">💎 Claim +${ALL_QUESTS_GEM_BONUS} Bonus Gems</button></div>`;
+  } else if(allDone){
+    html+='<div class="all-done-banner"><div class="adb-title">✅ All Done!</div><div class="adb-desc">Come back tomorrow for new quests!</div></div>';
+  }
+  html+='<div class="quest-list">';
+  G.quests.forEach((q,i)=>{
+    const pct=clamp(q.current/q.target*100,0,100);
+    html+=`<div class="quest${q.claimed?' done-q':''}">
+      <div class="quest-top"><div class="quest-ico">${q.ico}</div><div class="quest-info">
+        <div class="quest-name">${q.name}</div>
+        <div class="quest-desc">${q.desc}</div>
+        <div class="quest-reward">Reward: +${q.rwdAmt} ${q.rwdType}</div>
+      </div></div>
+      <div class="qp-track"><div class="qp-fill" style="width:${pct}%"></div></div>
+      <div class="quest-status">${q.current} / ${q.target}${q.claimed?' ✓':''}</div>
+      ${q.current>=q.target&&!q.claimed?`<button class="quest-claim-btn" data-qi="${i}">🎁 Claim</button>`:''}
+    </div>`;
+  });
+  html+='</div><div class="quest-timer">Refresh in: '+fmtTime(refreshIn)+'</div>';
+  panel.innerHTML=html;
+  panel.querySelectorAll('[data-qi]').forEach(b=>b.addEventListener('click',()=>claimQuest(parseInt(b.dataset.qi))));
+  document.getElementById('claim-all-btn')?.addEventListener('click',claimAllBonus);
+}
+
+/* ── TROPHIES ── */
+function renderTrophies(){
+  document.getElementById('ach-grid').innerHTML=ACHS.map((a,i)=>
+    `<div class="ach${G.achievements[i]?' unlocked':''}">
+      <div class="ach-ico">${a.ico}</div>
+      <div class="ach-nm">${a.name}</div>
+      <div class="ach-ds">${a.desc}</div>
+    </div>`
+  ).join('');
+}
+
+/* ── LOCKED PANEL ── */
+function renderLocked(panelId, ico, name, desc, req){
+  const panel=document.getElementById(panelId);
+  panel.innerHTML=`<div class="locked-panel">
+    <span class="lock-ico">${ico}</span>
+    <div class="lock-title">${name}</div>
+    <p class="lock-desc">${desc}</p>
+    <div class="lock-req">🔒 Requires ${req}</div>
+  </div>`;
+}
+
+/* ── DEV MODE ── */
+function renderDev(){
+  const panel=document.getElementById('panel-dev');
+  if(!panel) return;
+  panel.innerHTML=`
+    <div class="dev-panel">
+      <div class="dev-title">🛠️ Developer Console <span style="font-size:9px;color:var(--muted)">(secret — tap logo ×7)</span></div>
+      <div class="dev-grid">
+        <button class="dev-btn gold" id="dev-coins-1k">+1,000 Coins</button>
+        <button class="dev-btn gold" id="dev-coins-100k">+100,000 Coins</button>
+        <button class="dev-btn sapphire" id="dev-xp-100">+100 XP</button>
+        <button class="dev-btn sapphire" id="dev-xp-1000">+1,000 XP</button>
+        <button class="dev-btn" id="dev-gems-10">+10 Gems</button>
+        <button class="dev-btn" id="dev-gems-100">+100 Gems</button>
+        <button class="dev-btn amethyst" id="dev-relic-all">+5 Each Relic</button>
+        <button class="dev-btn amethyst" id="dev-disc-recipes">Discover All Recipes</button>
+        <button class="dev-btn ruby" id="dev-prestige-plus">+1 Prestige</button>
+        <button class="dev-btn ruby" id="dev-max-hero">Max Hero Stats</button>
+        <button class="dev-btn" id="dev-level-5">Level +5</button>
+        <button class="dev-btn" id="dev-wave-10">Wave +10</button>
+      </div>
+      <div class="sec" style="margin-top:4px">Custom Amount</div>
+      <div class="dev-input-row">
+        <input class="dev-input" id="dev-custom-val" type="number" placeholder="Amount" value="1000">
+        <button class="dev-btn gold" id="dev-give-coins" style="flex-shrink:0;padding:6px 10px">+Coins</button>
+        <button class="dev-btn sapphire" id="dev-give-xp" style="flex-shrink:0;padding:6px 10px">+XP</button>
+        <button class="dev-btn" id="dev-give-gems" style="flex-shrink:0;padding:6px 10px">+Gems</button>
+      </div>
+      <div class="sec" style="margin-top:10px">State Info</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.9;font-family:monospace;background:var(--s2);border-radius:7px;padding:9px 11px" id="dev-state-info"></div>
+    </div>`;
+
+  function devInfo(){
+    const el=document.getElementById('dev-state-info');
+    if(el) el.textContent=
+      `Level: ${G.level} | XP: ${G.xp}/${xpFor(G.level)}\n`+
+      `Coins: ${fmt(G.coins)} | Gems: ${G.gems}\n`+
+      `Prestige: ${G.prestigeCount} | Wave: ${G.wave}\n`+
+      `Kills: ${G.totalKills} | Recipes found: ${G.totalRecipesFound}\n`+
+      `Upgrades: [${G.upgrades.join(', ')}]\n`+
+      `Hero: HP ${G.hero.hp}/${G.hero.maxhp} ATK ${G.hero.atk} DEF ${G.hero.def}`;
+  }
+  devInfo();
+
+  function devAct(id, fn){ document.getElementById(id)?.addEventListener('click',()=>{fn(); renderAll(); devInfo();}); }
+
+  devAct('dev-coins-1k',  ()=>{G.coins+=1000;G.totalCoins+=1000;showToast('+1K Coins','dev');});
+  devAct('dev-coins-100k',()=>{G.coins+=100000;G.totalCoins+=100000;showToast('+100K Coins','dev');});
+  devAct('dev-xp-100',    ()=>{gainXP(100);showToast('+100 XP','dev');});
+  devAct('dev-xp-1000',   ()=>{gainXP(1000);showToast('+1000 XP','dev');});
+  devAct('dev-gems-10',   ()=>{G.gems+=10;G.totalGems+=10;showToast('+10 Gems','dev');});
+  devAct('dev-gems-100',  ()=>{G.gems+=100;G.totalGems+=100;showToast('+100 Gems','dev');});
+  devAct('dev-relic-all', ()=>{RELIC_DEFS.forEach(r=>G.relicInventory[r.id]=(G.relicInventory[r.id]||0)+5);showToast('+5 each relic','dev');});
+  devAct('dev-disc-recipes',()=>{ALL_RECIPES.forEach(r=>{if(!G.discoveredRecipes.includes(r.id)){G.discoveredRecipes.push(r.id);G.totalRecipesFound++;}});showToast('All recipes discovered','dev');});
+  devAct('dev-prestige-plus',()=>{
+    G.prestigeCount++; G.prestigeMult=1+G.prestigeCount*0.25;
+    updateTabLocks(); checkPrestigeReady();
+    showToast('Prestige set to '+G.prestigeCount,'dev');
+  });
+  devAct('dev-max-hero',  ()=>{
+    G.hero.atk=200; G.hero.def=100; G.hero.maxhp=1000; G.hero.hp=1000; G.hero.crit=50;
+    showToast('Hero maxed','dev');
+    if(document.getElementById('panel-combat').classList.contains('on')) renderCombat();
+  });
+  devAct('dev-level-5',   ()=>{gainXP(xpFor(G.level)*5);showToast('+5 levels (approx)','dev');});
+  devAct('dev-wave-10',   ()=>{G.wave+=10;spawnEnemy();showToast('Wave +10 → '+G.wave,'dev');});
+
+  ['dev-give-coins','dev-give-xp','dev-give-gems'].forEach((id,ci)=>{
+    document.getElementById(id)?.addEventListener('click',()=>{
+      const val=parseInt(document.getElementById('dev-custom-val').value)||0;
+      if(ci===0){G.coins+=val;G.totalCoins+=val;showToast('+'+val+' Coins','dev');}
+      if(ci===1){gainXP(val);showToast('+'+val+' XP','dev');}
+      if(ci===2){G.gems+=val;G.totalGems+=val;showToast('+'+val+' Gems','dev');}
+      renderAll(); devInfo();
+    });
+  });
+}
+
+/* ═══════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════ */
+spawnEnemy();
+generateQuests();
+updateTabLocks();
+renderAll();
+renderTrophies();
+checkPrestigeReady();
+
+document.getElementById('pr-btn').addEventListener('click', doPrestige);
+
+const clk=document.getElementById('clk');
+clk.addEventListener('click', e=>handleClick(e.clientX, e.clientY));
+clk.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t=e.changedTouches[0];
+  handleClick(t.clientX, t.clientY);
+},{passive:false});
+
+/* ═══════════════════════════════════════
+   COLLAPSE PANEL
+   ═══════════════════════════════════════ */
+let panelCollapsed = false;
+let nudgeLastShown = 0;
+let nudgeTimer = null;
+
+function setPanelCollapsed(v) {
+  panelCollapsed = v;
+  const pane = document.getElementById('bottom-pane');
+  const btn  = document.getElementById('collapse-btn');
+  const lbl  = document.getElementById('collapse-lbl');
+  const ico  = btn.querySelector('.cb-ico');
+
+  if(v) {
+    // Collapse: set explicit pixel height then animate to 0
+    pane.style.height = pane.scrollHeight + 'px';
+    pane.style.overflow = 'hidden';
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        pane.style.transition = 'height .38s cubic-bezier(.4,0,.2,1), opacity .3s';
+        pane.style.height = '0px';
+        pane.style.opacity = '0';
+        pane.style.pointerEvents = 'none';
+      });
+    });
+  } else {
+    // Expand: animate from 0 to natural height
+    pane.style.pointerEvents = '';
+    pane.style.opacity = '1';
+    pane.style.height = pane.scrollHeight + 'px';
+    pane.style.transition = 'height .38s cubic-bezier(.4,0,.2,1), opacity .3s';
+    pane.addEventListener('transitionend', function clear() {
+      pane.style.height = '';
+      pane.style.transition = '';
+      pane.style.overflow = '';
+      pane.removeEventListener('transitionend', clear);
+    });
+  }
+
+  btn.classList.toggle('panel-closed', v);
+  btn.classList.toggle('panel-open', !v);
+  ico.textContent = v ? '▲' : '▼';
+  lbl.textContent = v ? 'SHOW PANEL' : 'HIDE PANEL';
+
+  if(v) scheduleNudge();
+  else  clearNudge();
+}
+
+document.getElementById('collapse-btn').addEventListener('click', ()=>{
+  setPanelCollapsed(!panelCollapsed);
+});
+document.getElementById('upg-nudge').addEventListener('click', ()=>{
+  if(panelCollapsed) setPanelCollapsed(false);
+  clearNudge();
+});
+
+function scheduleNudge() {
+  clearNudge();
+  nudgeTimer = setInterval(()=>{
+    if(!panelCollapsed) return clearNudge();
+    const now = Date.now();
+    if(now - nudgeLastShown < 20000) return;
+    let best = null;
+    UPGRADES.forEach((u,i)=>{
+      const req = u.unlockReq;
+      if(req && G.upgrades[req.idx] < req.lv) return;
+      if(G.coins >= upgCost(i)) best = u;
+    });
+    if(best) { nudgeLastShown = now; showNudge('\u26d2\ufe0f '+best.name+' upgrade ready!'); }
+  }, 3000);
+}
+
+function clearNudge() {
+  if(nudgeTimer) { clearInterval(nudgeTimer); nudgeTimer = null; }
+  document.getElementById('upg-nudge').classList.remove('show');
+}
+
+let nudgeHideT;
+function showNudge(txt) {
+  const el = document.getElementById('upg-nudge');
+  document.getElementById('nudge-txt').textContent = txt;
+  el.classList.add('show');
+  clearTimeout(nudgeHideT);
+  nudgeHideT = setTimeout(()=>el.classList.remove('show'), 4000);
+}
+
+/* ═══════════════════════════════════════
+   FRENZY BAR
+   ═══════════════════════════════════════ */
+const FRENZY_MAX_TAPS  = 100;  // taps to fill bar
+const FRENZY_DURATION  = 60;   // seconds active
+const FRENZY_COOLDOWN  = 600;  // seconds cooldown (10 min)
+const FRENZY_MULT      = 3;    // ×3 coins per click (+200%)
+
+function frenzyOnTap() {
+  if(G.frenzyState === 'active') return;   // already running
+  if(G.frenzyState === 'cooldown') return; // on cooldown
+  G.frenzyTaps = Math.min(G.frenzyTaps + 1, FRENZY_MAX_TAPS);
+  if(G.frenzyTaps >= FRENZY_MAX_TAPS) {
+    // Activate!
+    G.frenzyState = 'active';
+    G.frenzyEndsAt = Date.now() + FRENZY_DURATION * 1000;
+    showToast('⚡ FRENZY! ×3 click income for 60s!', 'drop');
+  }
+  renderFrenzy();
+}
+
+function frenzyTick() {
+  const now = Date.now();
+  if(G.frenzyState === 'active') {
+    if(now >= G.frenzyEndsAt) {
+      G.frenzyState = 'cooldown';
+      G.frenzyTaps  = 0;
+      G.frenzyEndsAt = now + FRENZY_COOLDOWN * 1000;
+      showToast('⚡ Frenzy ended — 10 min cooldown', 'bad');
+    }
+  } else if(G.frenzyState === 'cooldown') {
+    if(now >= G.frenzyEndsAt) {
+      G.frenzyState = 'idle';
+      G.frenzyEndsAt = null;
+      showToast('⚡ Frenzy ready! Tap to charge!', 'info');
+    }
+  }
+  renderFrenzy();
+}
+setInterval(frenzyTick, 250);
+
+function frenzySkipCooldown() {
+  if(G.frenzyState !== 'cooldown') return;
+  // Simulate watching ad (in production hook to actual ad SDK)
+  showToast('📺 Ad watched! Cooldown skipped!', 'info');
+  G.frenzyState = 'idle';
+  G.frenzyTaps  = 0;
+  G.frenzyEndsAt = null;
+  renderFrenzy();
+}
+document.getElementById('frenzy-ad-btn').addEventListener('click', frenzySkipCooldown);
+
+function renderFrenzy() {
+  const fill   = document.getElementById('frenzy-fill');
+  const label  = document.getElementById('frenzy-label');
+  const status = document.getElementById('frenzy-status');
+  const hint   = document.getElementById('frenzy-hint');
+  const adBtn  = document.getElementById('frenzy-ad-btn');
+  if(!fill) return;
+
+  const now = Date.now();
+
+  if(G.frenzyState === 'active') {
+    const rem = Math.max(0, G.frenzyEndsAt - now);
+    const pct = (rem / (FRENZY_DURATION * 1000)) * 100;
+    fill.style.width = pct + '%';
+    fill.className = 'frenzy-fill active';
+    label.textContent = '⚡ FRENZY ACTIVE';
+    label.className = 'frenzy-label active';
+    status.textContent = '×3 · ' + Math.ceil(rem/1000) + 's';
+    status.className = 'frenzy-status active';
+    hint.textContent = '+200% click income!';
+    adBtn.classList.remove('visible');
+  } else if(G.frenzyState === 'cooldown') {
+    const rem = Math.max(0, G.frenzyEndsAt - now);
+    const pct = (rem / (FRENZY_COOLDOWN * 1000)) * 100;
+    fill.style.width = pct + '%';
+    fill.className = 'frenzy-fill cooldown';
+    label.textContent = '⏳ Cooldown';
+    label.className = 'frenzy-label cooldown';
+    const mins = Math.floor(rem/60000);
+    const secs = Math.ceil((rem%60000)/1000);
+    status.textContent = mins + ':' + String(secs).padStart(2,'0');
+    status.className = 'frenzy-status cooldown';
+    hint.textContent = 'Watch an ad to skip cooldown';
+    adBtn.classList.add('visible');
+  } else {
+    // idle / charging
+    const pct = (G.frenzyTaps / FRENZY_MAX_TAPS) * 100;
+    fill.style.width = pct + '%';
+    fill.className = 'frenzy-fill charging';
+    label.textContent = '⚡ Frenzy';
+    label.className = 'frenzy-label charging';
+    const rem = FRENZY_MAX_TAPS - G.frenzyTaps;
+    status.textContent = G.frenzyTaps > 0 ? G.frenzyTaps + '/' + FRENZY_MAX_TAPS : '';
+    status.className = 'frenzy-status';
+    hint.textContent = rem > 0
+      ? (G.frenzyTaps === 0 ? 'Tap to charge · ' + FRENZY_MAX_TAPS + ' taps to activate'
+                             : rem + ' more taps to activate!')
+      : '';
+    adBtn.classList.remove('visible');
+  }
+}
+
+
+/* ═══════════════════════════════════════
+   TUTORIAL SYSTEM
+   ═══════════════════════════════════════ */
+const TUTORIALS = {
+  intro: [
+    {
+      ico:'🪙',
+      title:'Welcome to TapRise!',
+      body:'Tap the <span class="tut-highlight">golden coin</span> to earn coins. The more you tap, the faster you grow rich!',
+    },
+    {
+      ico:'⚒️',
+      title:'The Forge',
+      body:'Spend coins in the <span class="tut-highlight">Forge tab</span> to buy upgrades that increase your coins per click and coins per second.',
+    },
+    {
+      ico:'🔢',
+      title:'Buy in Bulk',
+      body:'Use the <span class="tut-highlight">1× / 10× / 100× / Max×</span> buttons at the top of Forge to buy multiple upgrade levels at once.',
+    },
+    {
+      ico:'▼',
+      title:'Fullscreen Mode',
+      body:'Tap <span class="tut-highlight">HIDE PANEL</span> below the click button to collapse everything and tap in full-screen mode. You\'ll get nudges when upgrades are ready!',
+    },
+    {
+      ico:'✨',
+      title:'Prestige & Ascend',
+      body:'Reach <span class="tut-highlight">Level 15</span> to unlock Ascension. Prestige resets upgrades but grants permanent income bonuses — and unlocks new game systems!',
+    },
+    {
+      ico:'💎',
+      title:'Gems & Daily Quests',
+      body:'Earn free <span class="tut-highlight">💎 Gems</span> from the Shop, Daily quests, and combat drops. Use them to buy Relics or reveal Alchemy recipes.',
+    },
+  ],
+  combat: [
+    {
+      ico:'⚔️',
+      title:'Combat Unlocked!',
+      body:'Your hero <span class="tut-highlight">auto-battles</span> enemies every 2.5 seconds. Watch the battle log and keep your HP above zero!',
+    },
+    {
+      ico:'💀',
+      title:'Soul Shards',
+      body:'Defeating enemies drops <span class="tut-highlight">💀 Soul Shards</span> — the combat currency. Use them to buy Equipment and Passive Skills in this tab.',
+    },
+    {
+      ico:'🛡️',
+      title:'Defeat & Recovery',
+      body:'If your HP hits 0, you\'re sent back <span class="tut-highlight">2–5 waves</span> and must wait for your hero to recover before fighting again.',
+    },
+    {
+      ico:'🌊',
+      title:'Waves & Bosses',
+      body:'Every <span class="tut-highlight">10th wave</span> is a Boss fight — harder but worth more Shards and Gems. Higher waves mean tougher enemies and better rewards!',
+    },
+  ],
+  expeditions: [
+    {
+      ico:'🗺️',
+      title:'Expeditions Unlocked!',
+      body:'Send your hero on timed <span class="tut-highlight">Expeditions</span> to earn coins, XP, relics and gems — even while you\'re away!',
+    },
+    {
+      ico:'🪙',
+      title:'Costs & Rewards',
+      body:'Each expedition costs <span class="tut-highlight">coins to start</span> and requires a minimum wave reached in Combat. Rewards are randomized but always profitable!',
+    },
+    {
+      ico:'⏳',
+      title:'Claim When Done',
+      body:'Expeditions run in real time. Come back when the timer is up and tap <span class="tut-highlight">Claim Rewards</span> to collect your loot.',
+    },
+  ],
+  alchemy: [
+    {
+      ico:'⚗️',
+      title:'Alchemy Unlocked!',
+      body:'Combine <span class="tut-highlight">Relics</span> in the cauldron to brew powerful potions with temporary effects — coin boosts, combat buffs, and more!',
+    },
+    {
+      ico:'🌫️',
+      title:'Discover Recipes',
+      body:'All recipes start <span class="tut-highlight">unknown</span>. Experiment by placing relics and pressing Brew. Wrong combos have a <span class="tut-highlight">15% chance to destroy</span> each relic!',
+    },
+    {
+      ico:'💎',
+      title:'Reveal with Gems',
+      body:'Not feeling lucky? Spend <span class="tut-highlight">10 💎 Gems</span> on any unknown recipe card to instantly reveal its ingredients.',
+    },
+    {
+      ico:'🔮',
+      title:'Get Relics',
+      body:'Earn relics from <span class="tut-highlight">Combat drops</span> and Expeditions, or buy them in the 💎 Shop. Rarer relics make more powerful potions!',
+    },
+  ],
+};
+
+let tutorialQueue = [];
+let tutorialStep  = 0;
+
+function showTutorial(key) {
+  if(localStorage.getItem('tut_done_'+key)) return;
+  const steps = TUTORIALS[key];
+  if(!steps) return;
+  tutorialQueue = steps;
+  tutorialStep  = 0;
+  renderTutStep();
+}
+
+function renderTutStep() {
+  const ov = document.getElementById('tut-overlay');
+  const steps = tutorialQueue;
+  if(tutorialStep >= steps.length) {
+    closeTutorial(true);
+    return;
+  }
+  const s = steps[tutorialStep];
+  const isLast = tutorialStep === steps.length-1;
+  const dotsHtml = steps.map((_,i)=>`<div class="tut-dot${i===tutorialStep?' active':''}"></div>`).join('');
+
+  ov.style.display = 'flex';
+  ov.innerHTML = `<div class="tut-box">
+    <div class="tut-steps">${dotsHtml}</div>
+    <span class="tut-ico">${s.ico}</span>
+    <div class="tut-title">${s.title}</div>
+    <p class="tut-body">${s.body}</p>
+    <button class="tut-btn" id="tut-next">${isLast ? '✓ Got it!' : 'Next →'}</button>
+    <span class="tut-skip" id="tut-skip">Skip tutorial</span>
+  </div>`;
+
+  document.getElementById('tut-next').addEventListener('click', ()=>{
+    tutorialStep++;
+    renderTutStep();
+  });
+  document.getElementById('tut-skip').addEventListener('click', ()=>closeTutorial(false));
+}
+
+function closeTutorial(markDone) {
+  const ov = document.getElementById('tut-overlay');
+  ov.style.display = 'none';
+  if(markDone || true) { // always mark as done to not repeat
+    // We need to know which key — track it
+    if(tutorialQueue === TUTORIALS.intro)       localStorage.setItem('tut_done_intro','1');
+    else if(tutorialQueue === TUTORIALS.combat) localStorage.setItem('tut_done_combat','1');
+    else if(tutorialQueue === TUTORIALS.expeditions) localStorage.setItem('tut_done_expeditions','1');
+    else if(tutorialQueue === TUTORIALS.alchemy)     localStorage.setItem('tut_done_alchemy','1');
+  }
+}
+
+// Show intro tutorial on first load
+setTimeout(()=>showTutorial('intro'), 600);
+
+// Hook switchTab to show tutorials when tabs first open
+const _origSwitch = switchTab;
+function switchTabWithTutorial(name) {
+  _origSwitch(name);
+  if(name==='combat')      setTimeout(()=>showTutorial('combat'), 300);
+  if(name==='expeditions') setTimeout(()=>showTutorial('expeditions'), 300);
+  if(name==='alchemy')     setTimeout(()=>showTutorial('alchemy'), 300);
+}
+// Re-bind tab click listeners with tutorial-aware switchTab
+BASE_TABS.forEach(t=>{
+  const el = document.getElementById('tab-'+t);
+  if(el) {
+    const newEl = el.cloneNode(true);
+    el.parentNode.replaceChild(newEl, el);
+    newEl.addEventListener('click', ()=>switchTabWithTutorial(t));
+  }
+});
+
+</script>
+</body>
+</html>
