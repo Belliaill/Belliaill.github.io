@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#06070a</color>
+    <color name="surface1">#0b0d13</color>
+    <color name="surface2">#0f1219</color>
+    <color name="card">#13161f</color>
+    <color name="border">#1c2133</color>
+    <color name="gold">#e8b84b</color>
+    <color name="gold2">#f5d070</color>
+    <color name="ruby">#e84b6b</color>
+    <color name="emerald">#4be8a0</color>
+    <color name="sapphire">#4b9de8</color>
+    <color name="amethyst">#a04be8</color>
+    <color name="text">#d8dce8</color>
+    <color name="muted">#3d4560</color>
+    <color name="hp_green">#3ddc84</color>
+    <color name="hp_red">#ff4d4d</color>
+    <color name="prestige_purple">#b87fff</color>
+</resources>

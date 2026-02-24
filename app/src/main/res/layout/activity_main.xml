@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#06070a">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="#0b0d13">
+
+        <TextView
+            android:id="@+id/logo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TapRise"
+            android:textColor="#e8b84b"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12"
+            android:fontFamily="serif" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="10dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="end"
+                android:layout_marginEnd="12dp">
+                <TextView android:id="@+id/hCoins" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="0" android:textColor="#e8b84b" android:textSize="15sp" android:textStyle="bold" android:fontFamily="serif"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="COINS" android:textColor="#3d4560" android:textSize="9sp" android:letterSpacing="0.12"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="end"
+                android:layout_marginEnd="12dp">
+                <TextView android:id="@+id/hGems" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="0" android:textColor="#e8b84b" android:textSize="15sp" android:textStyle="bold" android:fontFamily="serif"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="GEMS" android:textColor="#3d4560" android:textSize="9sp" android:letterSpacing="0.12"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/prestigeGem"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="0"
+                android:textColor="#ffffff"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/prestige_gem_bg" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- RESOURCE BAR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#0b0d13">
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center" android:padding="8dp"
+            android:background="#0b0d13">
+            <TextView android:id="@+id/statCpc" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="1" android:textColor="#e8b84b" android:textSize="16sp" android:fontFamily="serif"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="PER CLICK" android:textColor="#3d4560" android:textSize="8sp"/>
+        </LinearLayout>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#1c2133"/>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center" android:padding="8dp">
+            <TextView android:id="@+id/statCps" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0" android:textColor="#e8b84b" android:textSize="16sp" android:fontFamily="serif"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="PER SEC" android:textColor="#3d4560" android:textSize="8sp"/>
+        </LinearLayout>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#1c2133"/>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center" android:padding="8dp">
+            <TextView android:id="@+id/statWave" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="1" android:textColor="#e8b84b" android:textSize="16sp" android:fontFamily="serif"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="WAVE" android:textColor="#3d4560" android:textSize="8sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- CLICK ZONE -->
+    <LinearLayout
+        android:id="@+id/clickZone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="14dp"
+        android:background="#0b0d13">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="4dp">
+            <TextView android:id="@+id/lvLabel" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Level 1" android:textColor="#e8b84b"
+                android:textSize="12sp" android:fontFamily="serif"/>
+            <TextView android:id="@+id/lvXp" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0 / 100 XP" android:textColor="#3d4560" android:textSize="11sp"/>
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/xpBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:max="100"
+            android:progress="0"
+            android:layout_marginBottom="12dp"
+            android:progressDrawable="@drawable/xp_bar_drawable"/>
+
+        <Button
+            android:id="@+id/tapBtn"
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:text="🪙"
+            android:textSize="52sp"
+            android:background="@drawable/tap_button_bg"
+            android:elevation="4dp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView android:id="@+id/cpsLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="+0 coins/sec" android:textColor="#3d4560" android:textSize="11sp"/>
+    </LinearLayout>
+
+    <!-- TABS -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:background="#0b0d13"
+        android:fillViewport="false">
+        <LinearLayout
+            android:id="@+id/tabBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <include layout="@layout/tab_item" android:id="@+id/tabForge"/>
+            <include layout="@layout/tab_item" android:id="@+id/tabCombat"/>
+            <include layout="@layout/tab_item" android:id="@+id/tabExpeditions"/>
+            <include layout="@layout/tab_item" android:id="@+id/tabAlchemy"/>
+            <include layout="@layout/tab_item" android:id="@+id/tabMarket"/>
+            <include layout="@layout/tab_item" android:id="@+id/tabDaily"/>
+            <include layout="@layout/tab_item" android:id="@+id/tabPrestige"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- CONTENT PANELS -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- TOAST -->
+    <TextView
+        android:id="@+id/toast"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:padding="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="#071008"
+        android:textStyle="bold"
+        android:textSize="12sp"
+        android:background="@drawable/toast_bg"
+        android:layout_gravity="bottom|center_horizontal"/>
+
+</LinearLayout>

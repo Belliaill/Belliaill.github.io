@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TapRise" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">#06070a</item>
+        <item name="android:navigationBarColor">#06070a</item>
+        <item name="colorPrimary">@color/gold</item>
+        <item name="colorPrimaryVariant">#c8860a</item>
+        <item name="colorOnPrimary">#000000</item>
+    </style>
+</resources>
